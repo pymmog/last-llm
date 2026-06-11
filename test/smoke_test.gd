@@ -1,0 +1,109 @@
+extends Node
+## Headless smoke test driver. Instantiates the run scene and force-exercises
+## every system: weapons, max levels, evolutions, enemy roster, alpha crate,
+## level-up cards, pickups and the end screen.
+##
+## Run with:
+##   godot --headless res://test/smoke_test.tscn --quit-after 900
+
+const Upgrades := preload("res://scripts/upgrades.gd")
+
+var main: Node2D
+var frame := 0
+var failures := 0
+
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	main = load("res://scenes/main.tscn").instantiate()
+	add_child(main)
+
+
+func check(cond: bool, what: String) -> void:
+	if cond:
+		print("OK   ", what)
+	else:
+		failures += 1
+		printerr("FAIL ", what)
+
+
+func _physics_process(_delta: float) -> void:
+	frame += 1
+	var player: Node2D = main.player
+	# Click through level-up cards until all pending levels are resolved.
+	if frame > 165 and frame < 300 and main.hud.levelup_panel.visible:
+		var card: Button = main.hud.cards_box.get_child(0)
+		card.pressed.emit()
+	match frame:
+		10:
+			check(player != null, "player exists")
+			check(player.weapons.size() == 1, "starts with one weapon")
+			for id in Upgrades.WEAPONS:
+				if player.get_weapon(id) == null:
+					player.add_weapon(id)
+			check(player.weapons.size() == 5, "all weapons equipped")
+		20:
+			for id in Upgrades.PASSIVES:
+				player.add_passive(id)
+			check(player.extra_projectiles >= 1, "targeting matrix applied")
+			check(player.armor >= 1.0, "plating applied")
+			for w in player.weapons:
+				while w.level < w.MAX_LEVEL:
+					w.level_up()
+		30:
+			for w in player.weapons:
+				if w.id != "rivet" and w.can_evolve():
+					w.evolve()
+			check(player.get_weapon("tesla").evolved, "tesla evolved")
+			check(not player.get_weapon("rivet").evolved, "rivet left for crate")
+		40:
+			for etype in ["shambler", "sprinter", "spitter", "brute"]:
+				main.director.spawn(etype, false)
+			main.director.spawn("brute", true)
+			check(main.enemies.size() >= 5, "roster spawned")
+			# Pull them close so weapons and contact logic engage.
+			for e in main.enemies:
+				e.position = player.position + Vector2(randf_range(80, 160), randf_range(-60, 60))
+		120:
+			check(main.kills >= 0 and is_instance_valid(player), "combat ran")
+			for e in main.enemies:
+				e.take_damage(99999.0)
+			check(main.kills >= 5, "all enemies killed (kills=%d)" % main.kills)
+		140:
+			# Alpha dropped a crate; walk over everything via forced collection.
+			var found_crate := false
+			for p in main.pickups_node.get_children():
+				if "kind" in p and p.kind == "crate":
+					found_crate = true
+					p.collect(player)
+			check(found_crate, "alpha dropped supply crate")
+			check(player.get_weapon("rivet").evolved, "crate evolved rivet gun")
+		160:
+			player.add_xp(2000.0)
+		165:
+			check(get_tree().paused, "level-up pauses the game")
+			check(main.hud.levelup_panel.visible, "level-up panel visible")
+		310:
+			check(not get_tree().paused, "all pending level-ups resolved")
+			check(player.level > 5, "xp leveled the player (level=%d)" % player.level)
+			main.spawn_pickup("medkit", player.position)
+			main.spawn_pickup("scrap", player.position, 7)
+			main.spawn_pickup("magnet", player.position)
+			player.hp = 10.0
+		340:
+			check(player.hp > 10.0, "medkit healed")
+			check(main.scrap_earned >= 7, "scrap collected (earned=%d)" % main.scrap_earned)
+			main.explode(player.position + Vector2(50, 0), 80.0, 10.0, true, 5.0)
+		400:
+			var before: int = Meta.scrap
+			main.end_run(true)
+			check(main.run_over, "run ended")
+			check(Meta.scrap > before, "scrap banked to meta save")
+			check(main.hud.end_panel != null and main.hud.end_panel.visible, "end screen shown")
+		430:
+			get_tree().paused = false
+			if failures == 0:
+				print("SMOKE OK")
+			else:
+				printerr("SMOKE FAILED: %d failures" % failures)
+			get_tree().quit(1 if failures > 0 else 0)
