@@ -1,0 +1,150 @@
+name: build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.4.1"
+
+jobs:
+  build:
+    name: Test & export (Linux AppImage / macOS / Windows)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot editor and export templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot-bin
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-stable-v1
+
+      - name: Install Godot and export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d /tmp
+          mv "/tmp/Godot_v${GODOT_VERSION}-stable_linux.x86_64" ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+          # The .tpz is a zip with a top-level templates/ dir; install only the
+          # platforms we export to keep the cache small.
+          curl -fsSL -o /tmp/templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q /tmp/templates.tpz -d /tmp/tpl \
+            'templates/linux_release.x86_64' \
+            'templates/linux_debug.x86_64' \
+            'templates/macos.zip' \
+            'templates/windows_release_x86_64.exe' \
+            'templates/windows_release_x86_64_console.exe'
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /tmp/tpl/templates ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Import project
+        run: ~/godot-bin/godot --headless --import
+
+      - name: Run smoke test
+        run: |
+          set -euo pipefail
+          ~/godot-bin/godot --headless res://test/smoke_test.tscn --quit-after 1200 2>&1 | tee smoke.log
+          grep -q "SMOKE OK" smoke.log
+          if grep -q "FAIL" smoke.log; then exit 1; fi
+
+      - name: Export Linux binary
+        run: |
+          set -euo pipefail
+          mkdir -p build/linux
+          ~/godot-bin/godot --headless --export-release "Linux x86_64" build/linux/rustpulse.x86_64
+          test -s build/linux/rustpulse.x86_64
+
+      - name: Package Linux AppImage
+        run: |
+          set -euo pipefail
+          mkdir -p AppDir/usr/bin
+          install -m 755 build/linux/rustpulse.x86_64 AppDir/usr/bin/rustpulse
+          cp icon.svg AppDir/rustpulse.svg
+          printf '%s\n' \
+            '[Desktop Entry]' \
+            'Name=RUSTPULSE' \
+            'Comment=Post-apocalyptic survivor-like' \
+            'Exec=rustpulse' \
+            'Icon=rustpulse' \
+            'Type=Application' \
+            'Categories=Game;' \
+            > AppDir/rustpulse.desktop
+          printf '%s\n' \
+            '#!/bin/sh' \
+            'HERE="$(dirname "$(readlink -f "$0")")"' \
+            'exec "$HERE/usr/bin/rustpulse" "$@"' \
+            > AppDir/AppRun
+          chmod +x AppDir/AppRun
+          curl -fsSL -o appimagetool \
+            "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage"
+          chmod +x appimagetool
+          ARCH=x86_64 ./appimagetool --appimage-extract-and-run AppDir build/linux/RUSTPULSE-x86_64.AppImage
+          test -s build/linux/RUSTPULSE-x86_64.AppImage
+
+      - name: Export macOS app (universal, ad-hoc signed)
+        run: |
+          set -euo pipefail
+          mkdir -p build/macos
+          ~/godot-bin/godot --headless --export-release "macOS" build/macos/rustpulse-macos.zip
+          test -s build/macos/rustpulse-macos.zip
+
+      - name: Export Windows exe
+        run: |
+          set -euo pipefail
+          mkdir -p build/windows
+          ~/godot-bin/godot --headless --export-release "Windows Desktop" build/windows/rustpulse.exe
+          test -s build/windows/rustpulse.exe
+
+      - name: Upload Linux AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustpulse-linux-appimage
+          path: build/linux/RUSTPULSE-x86_64.AppImage
+          if-no-files-found: error
+
+      - name: Upload macOS app
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustpulse-macos
+          path: build/macos/rustpulse-macos.zip
+          if-no-files-found: error
+
+      - name: Upload Windows exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustpulse-windows
+          path: build/windows/rustpulse.exe
+          if-no-files-found: error
+
+      - name: Write download instructions to run summary
+        run: |
+          {
+            echo "## RUSTPULSE builds"
+            echo ""
+            echo "Download the artifact for your OS from this run, then:"
+            echo ""
+            echo "- **Linux**: unzip, \`chmod +x RUSTPULSE-x86_64.AppImage\` (GitHub artifact"
+            echo "  downloads strip the executable bit), then run it."
+            echo "- **macOS**: unzip the artifact, then unzip \`rustpulse-macos.zip\` inside it"
+            echo "  (the inner zip preserves app bundle permissions). First launch: right-click"
+            echo "  \`RUSTPULSE.app\` → Open, or allow it under Privacy & Security; or run"
+            echo "  \`xattr -cr RUSTPULSE.app\`. The app is ad-hoc signed, not notarized."
+            echo "- **Windows**: unzip and run \`rustpulse.exe\`. SmartScreen will warn for an"
+            echo "  unsigned exe — choose More info → Run anyway."
+          } >> "$GITHUB_STEP_SUMMARY"
