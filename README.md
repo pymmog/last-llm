@@ -74,6 +74,56 @@ class hardware/drivers — no Vulkan required. For distribution, zip the binary
 (`zip rustpulse-linux-x86_64.zip rustpulse.x86_64`) or feed it to your
 packaging format of choice (AppImage, Flatpak, etc.).
 
+## Playing on macOS
+
+The project is pure GDScript with no platform-specific code, so it runs on
+macOS as-is. Two options:
+
+### Option 1 — run from source (easiest)
+
+1. Install Godot 4.4.x:
+   ```sh
+   brew install --cask godot
+   ```
+   or download the universal `.dmg` from
+   [godotengine.org/download/macos](https://godotengine.org/download/macos/)
+   (standard build, no Mono needed).
+2. Clone this repo and run it:
+   ```sh
+   git clone <repo-url> && cd last-llm
+   godot --path .        # or open the project in the Godot editor and press Play
+   ```
+
+### Option 2 — export a native .app
+
+A ready-made **macOS** preset is committed in `export_presets.cfg`
+(universal Intel + Apple Silicon binary, ad-hoc signed, `.zip` output).
+
+1. One-time: install the matching export templates — *Editor → Manage Export
+   Templates → Download and Install*, or:
+   ```sh
+   curl -LO https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+   godot --headless --install-export-templates Godot_v4.4.1-stable_export_templates.tpz
+   ```
+2. Export — *Project → Export → macOS → Export Project*, or:
+   ```sh
+   godot --headless --export-release "macOS" build/macos/rustpulse.zip
+   ```
+3. Unzip and launch `RUSTPULSE.app`.
+
+**First launch / Gatekeeper:** the app is ad-hoc signed (not notarized), so
+macOS will warn on first open. Either right-click the app → *Open* → *Open*,
+or allow it under *System Settings → Privacy & Security → Open Anyway*
+(needed on macOS 15+), or clear the quarantine flag from a terminal:
+
+```sh
+xattr -cr RUSTPULSE.app
+```
+
+This preset also cross-exports from a Linux host (that's how it was verified
+here). For public distribution you'd want Developer ID signing + notarization —
+see `codesign/*` and `notarization/*` in the preset.
+
 ## Headless validation / smoke test
 
 A self-checking smoke test exercises the whole game loop (weapons, levels,
@@ -95,7 +145,7 @@ Permanent progress lives at `user://meta.json`, i.e.
 ```
 docs/DESIGN.md            game design spec
 project.godot             project config (inputs, autoloads, GL compatibility)
-export_presets.cfg        Linux x86_64 release preset
+export_presets.cfg        Linux x86_64 + macOS export presets
 scenes/                   thin scene roots (children are built in code)
 scripts/main.gd           run orchestrator: state, queries, spawning services
 scripts/player.gd         movement, stats, XP, procedural robot art
