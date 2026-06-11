@@ -1,7 +1,7 @@
 # RUSTPULSE
 
 A post-apocalyptic, Vampire Survivors-inspired 2D survivor-like built with
-**Godot 4.4** for **Linux desktop**. You are UNIT-7, a lone maintenance robot
+**Godot 4.6** for **Linux desktop**. You are UNIT-7, a lone maintenance robot
 holding out against endless waves of color-coded human-like mutants. Move to
 survive — your weapons fire on their own. Survive 20 minutes to win; scrap
 earned in every run buys permanent Workshop upgrades.
@@ -25,7 +25,7 @@ Full design spec: [docs/DESIGN.md](docs/DESIGN.md)
 
 ## Running from source
 
-Requires [Godot 4.4.x](https://godotengine.org/download/linux/) (standard
+Requires [Godot 4.6.x](https://godotengine.org/download/linux/) (standard
 build, no Mono needed).
 
 ```sh
@@ -44,10 +44,10 @@ Export templates must match your editor version. Either:
 - **Editor:** *Editor → Manage Export Templates → Download and Install*, or
 - **CLI:**
   ```sh
-  curl -LO https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-  unzip Godot_v4.4.1-stable_export_templates.tpz   # contains a templates/ dir
+  curl -LO https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz
+  unzip Godot_v4.6-stable_export_templates.tpz   # contains a templates/ dir
   mkdir -p ~/.local/share/godot/export_templates
-  mv templates ~/.local/share/godot/export_templates/4.4.1.stable
+  mv templates ~/.local/share/godot/export_templates/4.6.stable
   ```
   (Only `linux_release.x86_64`, `macos.zip` and `windows_release_x86_64.exe`
   are needed for the presets in this repo.)
@@ -83,7 +83,7 @@ macOS as-is. Two options:
 
 ### Option 1 — run from source (easiest)
 
-1. Install Godot 4.4.x:
+1. Install Godot 4.6.x:
    ```sh
    brew install --cask godot
    ```
@@ -104,7 +104,7 @@ A ready-made **macOS** preset is committed in `export_presets.cfg`
 1. One-time: install the matching export templates — *Editor → Manage Export
    Templates → Download and Install*, or the manual CLI install shown in the
    Linux section above (the path is
-   `~/Library/Application Support/Godot/export_templates/4.4.1.stable` on macOS).
+   `~/Library/Application Support/Godot/export_templates/4.6.stable` on macOS).
 2. Export — *Project → Export → macOS → Export Project*, or:
    ```sh
    godot --headless --export-release "macOS" build/macos/rustpulse.zip

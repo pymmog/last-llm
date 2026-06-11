@@ -14,7 +14,7 @@ config/name="RUSTPULSE"
 config/description="A post-apocalyptic survivor-like: a lone robot vs. endless mutant hordes."
 config/version="1.0.0"
 run/main_scene="res://scenes/main_menu.tscn"
-config/features=PackedStringArray("4.4", "GL Compatibility")
+config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]

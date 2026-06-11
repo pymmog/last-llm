@@ -1,6 +1,6 @@
 # RUSTPULSE — Game Design Spec
 
-A 2D top-down survivor-like (Vampire Survivors-inspired) built in Godot 4.4 for
+A 2D top-down survivor-like (Vampire Survivors-inspired) built in Godot 4.6 for
 Linux desktop. You are **UNIT-7**, a maintenance robot in a post-apocalyptic
 wasteland, holding out against endless waves of human-like mutants.
 

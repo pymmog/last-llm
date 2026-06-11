@@ -50,7 +50,7 @@ func _physics_process(delta: float) -> void:
 	position += vel * delta
 
 	for e in main.enemies:
-		if e.dead or _hit.has(e.get_instance_id()):
+		if not is_instance_valid(e) or e.dead or _hit.has(e.get_instance_id()):
 			continue
 		var r: float = radius + e.radius
 		if position.distance_squared_to(e.position) < r * r:
@@ -72,7 +72,7 @@ func _nearest_unhit(max_range: float) -> Node2D:
 	var best: Node2D = null
 	var best_d := max_range * max_range
 	for e in main.enemies:
-		if e.dead or _hit.has(e.get_instance_id()):
+		if not is_instance_valid(e) or e.dead or _hit.has(e.get_instance_id()):
 			continue
 		var d: float = position.distance_squared_to(e.position)
 		if d < best_d:
