@@ -1,0 +1,110 @@
+# RUSTPULSE
+
+A post-apocalyptic, Vampire Survivors-inspired 2D survivor-like built with
+**Godot 4.4** for **Linux desktop**. You are UNIT-7, a lone maintenance robot
+holding out against endless waves of color-coded human-like mutants. Move to
+survive — your weapons fire on their own. Survive 20 minutes to win; scrap
+earned in every run buys permanent Workshop upgrades.
+
+Full design spec: [docs/DESIGN.md](docs/DESIGN.md)
+
+## Features
+
+- **Movement-only control** — WASD / arrow keys / gamepad left stick; Esc pauses
+- **5 auto-attacking weapons** (Rivet Gun, Scrap Saw, Tesla Arc, Plasma Mortar,
+  Nano Swarm), 8 levels each, each with a **weapon evolution** unlocked by
+  pairing it with the right passive
+- **11 passive upgrades**: fire rate, cooldown reduction, max HP, regen, armor,
+  extra projectiles, pierce, AoE, damage, move speed, pickup magnet
+- **4 mutant types** with readable silhouettes and color-coded behaviors
+  (green shambler, yellow sprinter, purple spitter, red brute) plus **alpha
+  minibosses** that drop evolution supply crates
+- **Time-scaled waves**, XP gems, level-up card picks, medkits, magnets, scrap
+- **Permanent unlocks**: a scrap-funded Workshop persisted to `user://meta.json`
+- All art is procedural `_draw()` — zero binary assets in the repo
+
+## Running from source
+
+Requires [Godot 4.4.x](https://godotengine.org/download/linux/) (standard
+build, no Mono needed).
+
+```sh
+godot --path . scenes/main_menu.tscn   # or just open the project in the editor
+```
+
+## Linux export workflow
+
+The repo ships a ready-made export preset (`export_presets.cfg`, preset
+`Linux x86_64`: embedded PCK, x86_64, test files excluded).
+
+### One-time setup: export templates
+
+Export templates must match your editor version. Either:
+
+- **Editor:** *Editor → Manage Export Templates → Download and Install*, or
+- **CLI:**
+  ```sh
+  curl -LO https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
+  godot --headless --install-export-templates Godot_v4.4.1-stable_export_templates.tpz
+  ```
+  (Manual alternative: unzip the `.tpz` and place `linux_release.x86_64` /
+  `linux_debug.x86_64` in `~/.local/share/godot/export_templates/4.4.1.stable/`.)
+
+### Export a release build
+
+From the editor: *Project → Export → Linux x86_64 → Export Project*.
+
+Headless / CI:
+
+```sh
+godot --headless --import                                              # first time only
+godot --headless --export-release "Linux x86_64" build/linux/rustpulse.x86_64
+```
+
+The output is a single self-contained native ELF binary (the game data PCK is
+embedded). Run it on any reasonably recent x86_64 Linux with X11 or Wayland:
+
+```sh
+chmod +x build/linux/rustpulse.x86_64   # already executable when exported locally
+./build/linux/rustpulse.x86_64
+```
+
+The project uses the **GL Compatibility** renderer, so it runs on OpenGL 3.3
+class hardware/drivers — no Vulkan required. For distribution, zip the binary
+(`zip rustpulse-linux-x86_64.zip rustpulse.x86_64`) or feed it to your
+packaging format of choice (AppImage, Flatpak, etc.).
+
+## Headless validation / smoke test
+
+A self-checking smoke test exercises the whole game loop (weapons, levels,
+evolutions, enemy roster, miniboss crate, level-up UI, pickups, end screen):
+
+```sh
+godot --headless res://test/smoke_test.tscn --quit-after 1200
+```
+
+It prints `SMOKE OK` on success.
+
+## Save data
+
+Permanent progress lives at `user://meta.json`, i.e.
+`~/.local/share/godot/app_userdata/RUSTPULSE/meta.json`. Delete it to reset.
+
+## Project layout
+
+```
+docs/DESIGN.md            game design spec
+project.godot             project config (inputs, autoloads, GL compatibility)
+export_presets.cfg        Linux x86_64 release preset
+scenes/                   thin scene roots (children are built in code)
+scripts/main.gd           run orchestrator: state, queries, spawning services
+scripts/player.gd         movement, stats, XP, procedural robot art
+scripts/enemy.gd          all mutant types: behaviors + silhouettes
+scripts/director.gd       wave scaling, type unlocks, miniboss schedule
+scripts/weapons/          weapon base + 5 weapons + friendly projectile
+scripts/upgrades.gd       weapon/passive catalog + level-up card generator
+scripts/pickups/          XP gems, medkits, scrap, magnets, crates
+scripts/ui/               HUD, level-up picker, menus, Workshop
+scripts/autoload/meta.gd  permanent unlocks + save/load
+test/smoke_test.gd        headless integration test
+```
