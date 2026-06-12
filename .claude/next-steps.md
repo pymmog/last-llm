@@ -16,9 +16,10 @@ as items land.
    `AudioStreamPlayer`s; (b) procedural blips via `AudioStreamGenerator`.
    Needs: hit, kill, level-up, pickup, evolve fanfare, player-hurt, UI click,
    plus one looping wasteland-wind ambience. Add volume sliders (see #3).
-3. **Settings menu.** Master/SFX volume, fullscreen toggle, screen-shake
-   toggle (accessibility), and a "reset save" button. Persist alongside the
-   existing `Meta` save.
+3. **Settings menu — remaining bits.** Done: volumes (master/music/SFX with
+   live buses), screen mode, FPS cap, FPS overlay; reachable from title and
+   pause. Still missing: screen-shake toggle (accessibility) and a
+   "reset save" button.
 4. **More juice.** 1–2 frame hit-stop on big hits, enemy knockback on hit
    (the `take_damage(amount, from)` signature already carries the source
    position — currently unused), corpse fade-out instead of instant pop,
@@ -49,8 +50,9 @@ as items land.
     (CI artifacts exist; wire butler into the workflow on tags); optionally a
     Flatpak manifest for Linux. macOS notarization and Windows signing if
     distributing outside itch.
-11. **Gamepad menu navigation** (UI focus neighbors + accept/cancel actions)
-    and key rebinding screen.
+11. **Key rebinding screen.** (Gamepad/keyboard menu navigation is done:
+    focus seeding on every panel, d-pad + left stick on the ui_* actions,
+    B/Esc backs out of menus.)
 
 ## P4 — Tech debt / performance (only when needed)
 

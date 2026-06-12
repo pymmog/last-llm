@@ -3,6 +3,8 @@ extends Node2D
 ## up), lightning (tesla polyline), burn (damaging ground patch), spark
 ## (directional impact debris), splat (acid glob impact).
 
+const SCORCH: Texture2D = preload("res://assets/sprites/fx_scorch.png")
+
 var main: Node2D
 var kind := "pop"
 var radius := 24.0
@@ -19,6 +21,7 @@ var _parts: Array = []
 
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	match kind:
 		"lightning":
 			life = 0.22
@@ -98,6 +101,10 @@ func _draw() -> void:
 				draw_circle(v * spread, 2.6 * fade + 0.4, cd)
 		"burn":
 			var flicker := 0.75 + 0.25 * sin(t * 23.0)
-			var c4 := Color(color.r, color.g, color.b, fade * 0.3 * flicker)
+			# Scorched-ground decal with a flickering glow on top.
+			var d := radius * 2.2
+			draw_texture_rect(SCORCH, Rect2(Vector2(-d, -d) * 0.5, Vector2(d, d)), false,
+				Color(1, 1, 1, fade * 1.4))
+			var c4 := Color(color.r, color.g, color.b, fade * 0.22 * flicker)
 			draw_circle(Vector2.ZERO, radius, c4)
-			draw_circle(Vector2.ZERO, radius * 0.6, Color(1.0, 0.7, 0.2, fade * 0.25 * flicker))
+			draw_circle(Vector2.ZERO, radius * 0.6, Color(1.0, 0.7, 0.2, fade * 0.2 * flicker))

@@ -1,6 +1,9 @@
 extends Node2D
 ## XP gem: idles until the player's pickup radius reaches it, then vacuums in.
 
+const SPRITE: Texture2D = preload("res://assets/sprites/xp_gem.png")
+const SPRITE_SCALE := 3
+
 var main: Node2D
 var value := 1.0
 var attracting := false
@@ -9,6 +12,7 @@ var sparkle := 0.0
 
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_to_group("xp_gems")
 	sparkle = randf() * TAU
 
@@ -37,6 +41,7 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
+	# Pale sprite, tinted per XP tier (texture is near-white so modulate ≈ tint).
 	var s := 4.0
 	var col := Color(0.25, 0.95, 0.9)
 	if value >= 20.0:
@@ -46,7 +51,5 @@ func _draw() -> void:
 		s = 5.5
 		col = Color(0.35, 0.6, 1.0)
 	var pulse := 1.0 + sin(sparkle) * 0.15
-	draw_colored_polygon(PackedVector2Array([
-		Vector2(0, -s * 1.3 * pulse), Vector2(s * pulse, 0),
-		Vector2(0, s * 1.3 * pulse), Vector2(-s * pulse, 0)]), col)
-	draw_line(Vector2(0, -s * 0.6), Vector2(0, s * 0.6), col.lightened(0.5), 1.5)
+	var size := SPRITE.get_size() / SPRITE_SCALE * (s / 4.0) * pulse
+	draw_texture_rect(SPRITE, Rect2(-size * 0.5, size), false, col)

@@ -21,7 +21,8 @@ Full design spec: [docs/DESIGN.md](docs/DESIGN.md)
   minibosses** that drop evolution supply crates
 - **Time-scaled waves**, XP gems, level-up card picks, medkits, magnets, scrap
 - **Permanent unlocks**: a scrap-funded Workshop persisted to `user://meta.json`
-- All art is procedural `_draw()` — zero binary assets in the repo
+- Generated PS1-style animated character sprites with procedural background,
+  pickups, weapons, and effects
 
 ## Running from source
 
@@ -182,10 +183,11 @@ export_presets.cfg        Linux x86_64 + macOS + Windows export presets
 .github/workflows/        CI: smoke test + AppImage/macOS/Windows artifacts
 scenes/                   thin scene roots (children are built in code)
 scripts/main.gd           run orchestrator: state, queries, spawning services
-scripts/player.gd         movement, stats, XP, procedural robot art
-scripts/enemy.gd          all mutant types: behaviors + silhouettes
+scripts/player.gd         movement, stats, XP, PS1 robot sprite animation
+scripts/enemy.gd          all mutant types: behaviors + PS1 sprite animation
 scripts/director.gd       wave scaling, type unlocks, miniboss schedule
 scripts/weapons/          weapon base + 5 weapons + friendly projectile
+assets/sprites/           generated PS1 character sprite assets
 scripts/upgrades.gd       weapon/passive catalog + level-up card generator
 scripts/pickups/          XP gems, medkits, scrap, magnets, crates
 scripts/ui/               HUD, level-up picker, menus, Workshop
