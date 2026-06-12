@@ -33,7 +33,7 @@ wasteland, holding out against endless waves of human-like mutants.
 | **Sprinter** | yellow       | tall, lanky, thin limbs | Fast and frail; lunges in straight bursts at the player. |
 | **Spitter**  | purple       | bulbous head, squat   | Keeps ~260 px distance and lobs acid globs (purple projectiles). |
 | **Brute**    | red          | broad shoulders, massive arms | Tanky; telegraphs (flashes) then charges in a straight line. |
-| **Alpha (miniboss)** | type color, larger + crown spikes | 2.5× scale | Scaled-up variant of a base type with a boss HP bar. Spawns at 3:00, 7:00, 11:00, 15:00, 19:00. Drops a **supply crate** (weapon evolution or scrap). |
+| **Alpha (miniboss)** | type color, larger + crown spikes | 2.5× scale | Scaled-up variant of a base type with a boss HP bar. Spawns at 3:00, 7:00, 11:00, 15:00, 19:00. Drops bonus XP gems and a **supply crate** (pick 1 of 6 upgrade cards; ready evolutions always offered). |
 
 Spawn director (time-based): Shamblers from 0:00, Sprinters from 1:00,
 Spitters from 2:30, Brutes from 4:30. Spawn interval shrinks and enemy
@@ -51,8 +51,8 @@ enemies (oldest far-off-screen enemies are recycled). Survive **20:00** to win.
 | **Nano Swarm** | Launches homing nano-drones. | + *Targeting Matrix* → **Gray Goo**: bigger volleys, drones pierce. |
 
 Weapons level 1→8 via level-up picks. Evolution requires the weapon at max
-level **and** owning its paired passive; it is then offered by the next
-miniboss **supply crate** (or as a level-up card).
+level **and** owning its paired passive; it is then guaranteed among the next
+miniboss **supply crate**'s offers (or appears as a level-up card).
 
 ## Passive upgrades (max 4 passive slots, 5 levels each unless noted)
 
@@ -79,7 +79,8 @@ miniboss **supply crate** (or as a level-up card).
    weapon level, new passive, passive level, or an evolution if eligible).
    Filled slots constrain offers; if everything is maxed, cards become
    25 scrap each.
-3. Minibosses drop **supply crates**: evolve an eligible weapon, else +50 scrap.
+3. Minibosses drop bonus XP and **supply crates**: pick 1 of 6 upgrade cards
+   (ready evolutions are always among the offers).
 4. Run ends at death or 20:00 survival (victory). Scrap is banked either way
    (victory pays +200 bonus).
 5. **Workshop (permanent unlocks, between runs):** spend scrap on tiered

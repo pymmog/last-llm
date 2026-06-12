@@ -38,7 +38,9 @@ const COL_EVOLVE := Color(1.0, 0.85, 0.3)
 const COL_SCRAP := Color(0.7, 0.7, 0.7)
 
 
-static func build_choices(player: Node2D, count: int) -> Array:
+static func build_choices(player: Node2D, count: int, force_evolve := false) -> Array:
+	# force_evolve seeds available evolution cards into the offer first, so a
+	# supply crate never rolls past a ready evolution.
 	var pool: Array = []  # [{card, weight}]
 
 	for w in player.weapons:
@@ -80,7 +82,15 @@ static func build_choices(player: Node2D, count: int) -> Array:
 				"color": COL_PASSIVE}})
 
 	var choices: Array = []
-	for i in count:
+	if force_evolve:
+		var i := 0
+		while i < pool.size() and choices.size() < count:
+			if pool[i]["card"]["kind"] == "evolve":
+				choices.append(pool[i]["card"])
+				pool.remove_at(i)
+			else:
+				i += 1
+	while choices.size() < count:
 		if pool.is_empty():
 			choices.append({"kind": "scrap", "id": "", "title": "+25 SCRAP",
 				"desc": "Everything is maxed out", "color": COL_SCRAP})

@@ -26,7 +26,10 @@ var damage_flash: ColorRect
 var damage_flash_t := 0.0
 
 var levelup_panel: Control
+var levelup_title: Label
 var cards_box: HBoxContainer
+var crate_picks := 0  # queued supply-crate rewards (1-of-6 picks)
+var showing_crate := false  # whether the cards on screen are a crate offer
 var pause_panel: Control
 var settings_panel: Control
 var settings_controls: Control
@@ -207,12 +210,12 @@ func flash_damage() -> void:
 func _build_levelup() -> void:
 	levelup_panel = _overlay()
 	var box := _center_panel(levelup_panel)
-	var title := Label.new()
-	title.text = "SYSTEM UPGRADE AVAILABLE"
-	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color(0.54, 1.0, 0.94))
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
+	levelup_title = Label.new()
+	levelup_title.text = "SYSTEM UPGRADE AVAILABLE"
+	levelup_title.add_theme_font_size_override("font_size", 26)
+	levelup_title.add_theme_color_override("font_color", Color(0.54, 1.0, 0.94))
+	levelup_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(levelup_title)
 	cards_box = HBoxContainer.new()
 	cards_box.add_theme_constant_override("separation", 14)
 	cards_box.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -224,13 +227,23 @@ func on_level_up() -> void:
 		_show_levelup()
 
 
+func on_crate() -> void:
+	crate_picks += 1
+	if not levelup_panel.visible:
+		_show_levelup()
+
+
 func _show_levelup() -> void:
 	get_tree().paused = true
 	for c in cards_box.get_children():
 		cards_box.remove_child(c)  # detach now so get_child(0) below is a new card
 		c.queue_free()
-	var count := 3 + Meta.tier("choices")
-	var choices: Array = Upgrades.build_choices(main.player, count)
+	# Crate rewards offer 1 of 6 cards; level-ups offer 3 (4 with the
+	# Tactical Uplink workshop unlock).
+	showing_crate = crate_picks > 0
+	levelup_title.text = "SUPPLY CRATE: CHOOSE ONE" if showing_crate else "SYSTEM UPGRADE AVAILABLE"
+	var count := 6 if showing_crate else 3 + Meta.tier("choices")
+	var choices: Array = Upgrades.build_choices(main.player, count, showing_crate)
 	for card in choices:
 		cards_box.add_child(_make_card(card))
 	levelup_panel.visible = true
@@ -274,8 +287,13 @@ func _make_card(card: Dictionary) -> Button:
 
 func _on_card_picked(card: Dictionary) -> void:
 	Upgrades.apply(main, card)
-	main.player.pending_levels -= 1
-	if main.player.pending_levels > 0:
+	# Charge the pick to whichever offer was on screen: a crate queued while
+	# a level-up was showing must not consume that level-up's pick.
+	if showing_crate:
+		crate_picks -= 1
+	else:
+		main.player.pending_levels -= 1
+	if crate_picks > 0 or main.player.pending_levels > 0:
 		_show_levelup()
 	else:
 		levelup_panel.visible = false
@@ -424,7 +442,10 @@ func _build_debug() -> void:
 	_debug_btn(actions, "Kill All Enemies", _debug_kill_all)
 	_debug_btn(actions, "Skip +1 Minute", func() -> void:
 		main.run_time += 60.0)
-	_debug_btn(actions, "Crate Reward / Evolve", func() -> void:
+	_debug_btn(actions, "Crate Reward", func() -> void:
+		# Hide the menu first: the crate opens the card picker, which takes
+		# over the pause state and focus.
+		debug_panel.visible = false
 		main.open_crate())
 	_debug_btn(actions, "Close", _toggle_debug)
 	debug_stats = Label.new()

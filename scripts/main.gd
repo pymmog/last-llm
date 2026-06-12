@@ -283,16 +283,8 @@ func explode(pos: Vector2, radius: float, damage: float, burn: bool = false, bur
 # ---------------------------------------------------------------- crates / end
 
 func open_crate() -> void:
-	for w in player.weapons:
-		if w.can_evolve():
-			w.evolve()
-			Sfx.play("evolve")
-			hud.show_banner("WEAPON EVOLVED: %s" % w.display_name)
-			spawn_fx("ring", player.position, 90.0, Color(1, 0.85, 0.3))
-			return
-	scrap_earned += 50
 	Sfx.play("crate")
-	hud.show_banner("SUPPLY CRATE: +50 SCRAP")
+	hud.on_crate()
 
 
 func end_run(victory: bool) -> void:

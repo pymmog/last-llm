@@ -37,13 +37,13 @@ const PS1_HEIGHTS := {
 }
 
 const TYPES := {
-	"shambler": {"hp": 18.0, "speed": 52.0, "dmg": 8.0, "radius": 11.0, "xp": 1.0,
+	"shambler": {"hp": 15.0, "speed": 52.0, "dmg": 8.0, "radius": 11.0, "xp": 1.0,
 		"color": Color(0.45, 0.72, 0.30), "scrap_chance": 0.03},
-	"sprinter": {"hp": 11.0, "speed": 78.0, "dmg": 6.0, "radius": 9.0, "xp": 1.5,
+	"sprinter": {"hp": 9.0, "speed": 78.0, "dmg": 6.0, "radius": 9.0, "xp": 1.5,
 		"color": Color(0.92, 0.80, 0.25), "scrap_chance": 0.04},
-	"spitter": {"hp": 16.0, "speed": 44.0, "dmg": 7.0, "radius": 10.0, "xp": 2.0,
+	"spitter": {"hp": 14.0, "speed": 44.0, "dmg": 7.0, "radius": 10.0, "xp": 2.0,
 		"color": Color(0.64, 0.36, 0.80), "scrap_chance": 0.05},
-	"brute": {"hp": 95.0, "speed": 38.0, "dmg": 18.0, "radius": 16.0, "xp": 6.0,
+	"brute": {"hp": 85.0, "speed": 38.0, "dmg": 18.0, "radius": 16.0, "xp": 6.0,
 		"color": Color(0.84, 0.26, 0.20), "scrap_chance": 0.35},
 }
 
@@ -224,7 +224,7 @@ func die() -> void:
 	var d: Dictionary = TYPES[type]
 	if is_alpha:
 		main.spawn_pickup("crate", position)
-		main.spawn_pickup("scrap", position + Vector2(30, 0), 10 + randi() % 10)
+		main.spawn_xp(position + Vector2(30, 0), xp_value)
 		main.spawn_xp(position + Vector2(-20, 10), xp_value)
 	else:
 		if randf() < float(d["scrap_chance"]):
