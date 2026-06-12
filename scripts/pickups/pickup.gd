@@ -1,6 +1,6 @@
 extends Node2D
 ## Touch pickups: medkit (+25% HP), scrap (meta currency), magnet (vacuum all
-## gems), crate (weapon evolution / scrap from minibosses).
+## gems), crate (1-of-6 upgrade pick from minibosses).
 
 const SPRITE_SCALE := 3
 const SPRITES := {

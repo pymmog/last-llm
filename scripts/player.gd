@@ -143,7 +143,7 @@ func get_weapon(id: String) -> Node2D:
 # ---------------------------------------------------------------- xp / hp
 
 func xp_for_level(lv: int) -> float:
-	return 6.0 + lv * 4.0 + pow(lv, 1.6)
+	return 4.0 + lv * 3.0 + pow(lv, 1.6)
 
 
 func add_xp(value: float) -> void:

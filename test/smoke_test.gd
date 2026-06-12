@@ -4,7 +4,7 @@ extends Node
 ## level-up cards, pickups and the end screen.
 ##
 ## Run with:
-##   godot --headless res://test/smoke_test.tscn --quit-after 900
+##   godot --headless res://test/smoke_test.tscn --quit-after 1200
 
 const Upgrades := preload("res://scripts/upgrades.gd")
 
@@ -108,6 +108,13 @@ func _physics_process(_delta: float) -> void:
 				e.take_damage(99999.0)
 			check(main.kills >= 5, "all enemies killed (kills=%d)" % main.kills)
 		140:
+			# Alpha XP gems may have leveled the player already; resolve those
+			# picks so the crate offer below is shown on its own.
+			var drain := 0
+			while main.hud.levelup_panel.visible and drain < 32:
+				(main.hud.cards_box.get_child(0) as Button).pressed.emit()
+				drain += 1
+			check(not main.hud.levelup_panel.visible, "pending level-ups drained")
 			# Alpha dropped a crate; walk over everything via forced collection.
 			var found_crate := false
 			for p in main.pickups_node.get_children():
@@ -115,7 +122,15 @@ func _physics_process(_delta: float) -> void:
 					found_crate = true
 					p.collect(player)
 			check(found_crate, "alpha dropped supply crate")
-			check(player.get_weapon("rivet").evolved, "crate evolved rivet gun")
+			check(main.hud.levelup_panel.visible, "crate opened the card picker")
+			check(main.hud.cards_box.get_child_count() == 6, "crate offers 6 cards")
+			var first_title: Label = main.hud.cards_box.get_child(0).get_child(0).get_child(1)
+			check(first_title.text.begins_with("EVOLVE"), "crate offer leads with ready evolution")
+		145:
+			(main.hud.cards_box.get_child(0) as Button).pressed.emit()
+		150:
+			check(player.get_weapon("rivet").evolved, "crate card evolved rivet gun")
+			check(not get_tree().paused, "crate pick resolved and unpaused")
 		160:
 			player.add_xp(2000.0)
 		165:
