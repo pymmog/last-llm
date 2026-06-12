@@ -4,8 +4,10 @@ extends "res://scripts/weapons/weapon_base.gd"
 
 const BLADE_RADIUS := 9.0
 const HIT_COOLDOWN := 0.45
+const BLADE_SPRITE: Texture2D = preload("res://assets/sprites/projectile_saw_blade.png")
 
 var angle := 0.0
+var blade_spin := 0.0
 var _last_hit := {}  # enemy instance id -> time of last hit
 var _time := 0.0
 
@@ -15,6 +17,7 @@ func _init() -> void:
 	display_name = "Scrap Saw"
 	paired_passive = "plating"
 	evolved_name = "Buzzkill Halo"
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
 func blade_count() -> int:
@@ -56,11 +59,17 @@ func spin_speed() -> float:
 	return 4.6 if evolved else 3.0
 
 
+func blade_spin_speed() -> float:
+	return 24.0 if evolved else 18.0
+
+
 func _physics_process(delta: float) -> void:
 	if main.run_over:
 		return
 	_time += delta
-	angle += spin_speed() * (1.0 + player.attack_speed) * delta
+	var speed_factor: float = 1.0 + float(player.attack_speed)
+	angle = wrapf(angle + spin_speed() * speed_factor * delta, 0.0, TAU)
+	blade_spin = wrapf(blade_spin + blade_spin_speed() * speed_factor * delta, 0.0, TAU)
 	var r := orbit_radius()
 	var n := blade_count()
 	var damage := blade_damage()
@@ -77,19 +86,17 @@ func _physics_process(delta: float) -> void:
 
 func _draw() -> void:
 	# Drawn relative to the player (this node sits at the player's origin).
+	# Sprite is pale steel; gold modulate marks the evolved halo.
 	var r := orbit_radius()
 	var n := blade_count()
-	var col := Color(0.95, 0.75, 0.25) if evolved else Color(0.75, 0.75, 0.78)
+	var col := Color(1.0, 0.8, 0.3) if evolved else Color(1, 1, 1)
+	var d := BLADE_RADIUS * 2.2
 	for i in n:
 		var a := angle + TAU * i / n
 		var c := Vector2(cos(a), sin(a)) * r
-		var pts := PackedVector2Array()
-		for t in 8:
-			var ta := angle * 3.0 + TAU * t / 8.0
-			var rad := BLADE_RADIUS if t % 2 == 0 else BLADE_RADIUS * 0.62
-			pts.append(c + Vector2(cos(ta), sin(ta)) * rad)
-		draw_colored_polygon(pts, col)
-		draw_circle(c, 2.5, Color(0.3, 0.3, 0.32))
+		draw_set_transform(c, blade_spin + TAU * i / n, Vector2.ONE)
+		draw_texture_rect(BLADE_SPRITE, Rect2(Vector2(-d, -d) * 0.5, Vector2(d, d)), false, col)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func upgrade_desc() -> String:

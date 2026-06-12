@@ -1,8 +1,15 @@
 extends Node2D
 ## UNIT-7: movement-only control. All stats live here; weapons and passives
-## read them when firing. Drawn procedurally (orange robot on treads).
+## read them when firing. Drawn as a generated PS1-style salvage robot sprite.
 
 const Upgrades := preload("res://scripts/upgrades.gd")
+const PS1_TREAD_FRAMES := [
+	preload("res://assets/sprites/unit7_tread_0.png"),
+	preload("res://assets/sprites/unit7_tread_1.png"),
+	preload("res://assets/sprites/unit7_tread_2.png"),
+	preload("res://assets/sprites/unit7_tread_3.png"),
+]
+const PS1_SPRITE_HEIGHT := 44.0
 
 var main: Node2D
 var camera: Camera2D
@@ -38,6 +45,7 @@ var moving := false
 
 
 func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	camera = Camera2D.new()
 	camera.zoom = Vector2(1.0, 1.0)
 	add_child(camera)
@@ -132,6 +140,7 @@ func add_xp(value: float) -> void:
 		pending_levels += 1
 		leveled = true
 	if leveled:
+		Sfx.play("level_up")
 		main.spawn_fx("ring", position, 40.0, Color(0.3, 1.0, 0.9))
 		main.hud.on_level_up()
 
@@ -142,6 +151,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
 	var dealt := maxf(amount - armor, 1.0)
 	hp -= dealt
 	invuln = 0.4
+	Sfx.play("player_hurt", -2.0)
 	var hit_dir := (position - from).normalized() if from.is_finite() else Vector2.from_angle(randf() * TAU)
 	main.add_shake(6.0)
 	main.hitstop(0.05)
@@ -150,6 +160,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
 	main.add_damage_number(position, dealt, Color(1.0, 0.35, 0.3))
 	if hp <= 0.0:
 		hp = 0.0
+		Sfx.play("player_die")
 		main.add_shake(14.0)
 		main.spawn_fx("pop", position, 40.0, Color(1.0, 0.5, 0.2))
 		main.spawn_fx("ring", position, 70.0, Color(1.0, 0.4, 0.2))
@@ -167,30 +178,21 @@ func heal(amount: float) -> void:
 
 func _draw() -> void:
 	var f := facing
-	var bob := sin(anim_t) * 1.5 if moving else sin(Time.get_ticks_msec() / 400.0) * 0.8
-	var body := Color(0.85, 0.48, 0.16)
-	var head := Color(0.91, 0.58, 0.25)
-	var dark := Color(0.23, 0.21, 0.19)
+	var glow := Color(0.08, 0.95, 1.0)
+	var modulate := Color(1, 1, 1, 1)
 	if invuln > 0.0 and fmod(invuln, 0.12) > 0.06:
-		body = Color(1, 1, 1)
-		head = Color(1, 1, 1)
+		modulate = Color(1.8, 1.8, 1.8, 1)
+	var frame: Texture2D = PS1_TREAD_FRAMES[int(anim_t) % PS1_TREAD_FRAMES.size()] if moving else PS1_TREAD_FRAMES[0]
+	# Treads stay planted; vertical bob against a fixed shadow reads as hovering.
+	var foot := Vector2(0, 16)
 	# Shadow
-	draw_ellipse_approx(Vector2(0, 13), Vector2(13, 5), Color(0, 0, 0, 0.3))
-	# Treads
-	draw_rect(Rect2(-11, 6, 22, 8), dark)
-	var tread_phase := fmod(anim_t, 1.0) * 6.0
-	for i in 4:
-		var tx := -9.0 + fmod(i * 6.0 + tread_phase, 20.0)
-		draw_rect(Rect2(tx, 7, 2, 6), Color(0.4, 0.38, 0.35))
-	# Body
-	draw_rect(Rect2(-9, -6 + bob, 18, 14), body)
-	draw_rect(Rect2(-7, -1 + bob, 14, 3), Color(0.45, 0.27, 0.1))
-	# Head
-	draw_circle(Vector2(0, -10 + bob), 8.0, head)
-	draw_circle(Vector2(3.0 * f, -11 + bob), 2.6, Color(0.16, 0.9, 0.88))
-	# Antenna
-	draw_line(Vector2(-3 * f, -17 + bob), Vector2(-5 * f, -24 + bob), Color(0.6, 0.6, 0.6), 1.5)
-	draw_circle(Vector2(-5 * f, -25 + bob), 2.0, Color(0.95, 0.3, 0.3))
+	draw_ellipse_approx(Vector2(0, 14), Vector2(16, 5.0), Color(0, 0, 0, 0.32))
+	draw_ellipse_approx(Vector2(1.5 * f, 11.5), Vector2(10, 3.0), Color(glow.r, glow.g, glow.b, 0.08))
+
+	# Source sprite faces left; flip when facing right.
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f, 1.0))
+	draw_ps1_sprite(frame, PS1_SPRITE_HEIGHT, foot, modulate)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 
 func draw_ellipse_approx(center: Vector2, r: Vector2, color: Color) -> void:
@@ -199,3 +201,13 @@ func draw_ellipse_approx(center: Vector2, r: Vector2, color: Color) -> void:
 		var a := TAU * i / 16.0
 		pts.append(center + Vector2(cos(a) * r.x, sin(a) * r.y))
 	draw_colored_polygon(pts, color)
+
+
+func draw_ps1_sprite(texture: Texture2D, target_height: float, foot: Vector2, modulate: Color) -> void:
+	var tex_size := texture.get_size()
+	var target_width := target_height * tex_size.x / tex_size.y
+	var rect := Rect2(
+		Vector2(-target_width * 0.5, foot.y - target_height),
+		Vector2(target_width, target_height)
+	)
+	draw_texture_rect(texture, rect, false, modulate)

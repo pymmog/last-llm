@@ -15,8 +15,8 @@ wasteland, holding out against endless waves of human-like mutants.
 
 ## Player
 
-- **Character:** UNIT-7, a squat orange service robot (round head, antenna,
-  treads). Drawn procedurally (`_draw()`), no external art assets.
+- **Character:** UNIT-7, a squat orange service robot with treads, cyan optics,
+  and a side weapon pod. Drawn from a generated PS1-style sprite.
 - **Controls:** WASD / arrow keys / gamepad left stick — movement only.
   `Esc` pauses. Menus are mouse/keyboard driven.
 - **Base stats:** 100 HP, 0 regen, 0 armor, 150 px/s move speed, 60 px pickup
@@ -89,9 +89,10 @@ miniboss **supply crate** (or as a level-up card).
 
 ## Presentation
 
-- All art is procedural `_draw()` polygons — strong silhouettes, flat colors,
-  dark wasteland palette (cracked earth, debris scatter drawn per-cell around
-  the camera with a deterministic hash).
+- Characters use generated PS1-style animated sprites with nearest-neighbor
+  filtering, strong silhouettes, crunchy texture detail, and color-coded enemy
+  reads. Backgrounds, pickups, weapons, and effects remain procedural `_draw()`
+  art on a dark wasteland palette.
 - Game feel: hit flashes, floating damage numbers, screen shake on big hits,
   enemy death "pop", XP vacuum effect.
 - Resolution 1280×720, `canvas_items` stretch, integer-friendly UI.

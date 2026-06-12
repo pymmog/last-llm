@@ -56,6 +56,7 @@ func fire() -> bool:
 			"drone", 6.0, 4.0)
 		p.homing = true
 		p.turn_rate = 5.0
+	Sfx.play("swarm", -6.0)
 	return true
 
 

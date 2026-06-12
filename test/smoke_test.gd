@@ -35,6 +35,37 @@ func _physics_process(_delta: float) -> void:
 		var card: Button = main.hud.cards_box.get_child(0)
 		card.pressed.emit()
 	match frame:
+		5:
+			check(AudioServer.get_bus_index("Music") >= 0, "music bus created")
+			check(AudioServer.get_bus_index("SFX") >= 0, "sfx bus created")
+			Settings.set_volume("Master", 0.5)
+			check(absf(AudioServer.get_bus_volume_db(0) - linear_to_db(0.5)) < 0.01,
+				"master volume applied to bus")
+			Settings.set_volume("Master", 1.0)
+			Settings.apply_fps_cap(120)
+			check(Engine.max_fps == 120, "fps cap applied")
+			Settings.apply_fps_cap(0)
+			Settings.set_show_fps(true)
+			Settings.set_show_fps(false)
+			Settings.save_data()
+			check(FileAccess.file_exists(Settings.SAVE_PATH), "settings file saved")
+			var has_w := false
+			for ev in InputMap.action_get_events("ui_up"):
+				if ev is InputEventKey and ev.physical_keycode == KEY_W:
+					has_w = true
+			check(has_w, "WASD bound to ui navigation")
+			# Settings screen builds without errors.
+			var sm: Control = load("res://scenes/settings_menu.tscn").instantiate()
+			add_child(sm)
+			check(sm.panel.grid.get_child_count() == 12, "settings menu built (6 rows)")
+			sm.queue_free()
+			# In-run settings reachable from the pause menu.
+			main.hud._open_settings()
+			check(main.hud.settings_panel.visible, "pause settings panel opens")
+			main.hud._close_settings()
+			check(main.hud.pause_panel.visible and not main.hud.settings_panel.visible,
+				"pause settings panel closes back to pause menu")
+			main.hud.pause_panel.visible = false
 		10:
 			check(player != null, "player exists")
 			check(player.weapons.size() == 1, "starts with one weapon")
@@ -83,6 +114,8 @@ func _physics_process(_delta: float) -> void:
 		165:
 			check(get_tree().paused, "level-up pauses the game")
 			check(main.hud.levelup_panel.visible, "level-up panel visible")
+			check(get_viewport().gui_get_focus_owner() == main.hud.cards_box.get_child(0),
+				"first upgrade card has keyboard focus")
 		310:
 			check(not get_tree().paused, "all pending level-ups resolved")
 			check(player.level > 5, "xp leveled the player (level=%d)" % player.level)

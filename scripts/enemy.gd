@@ -3,6 +3,38 @@ extends Node2D
 ## switch on `type`. Alphas are scaled-up minibosses that drop supply crates.
 
 const EnemyProjectileScript := preload("res://scripts/enemy_projectile.gd")
+const PS1_WALK_FRAMES := {
+	"shambler": [
+		preload("res://assets/sprites/shambler_walk_0.png"),
+		preload("res://assets/sprites/shambler_walk_1.png"),
+		preload("res://assets/sprites/shambler_walk_2.png"),
+		preload("res://assets/sprites/shambler_walk_3.png"),
+	],
+	"sprinter": [
+		preload("res://assets/sprites/sprinter_walk_0.png"),
+		preload("res://assets/sprites/sprinter_walk_1.png"),
+		preload("res://assets/sprites/sprinter_walk_2.png"),
+		preload("res://assets/sprites/sprinter_walk_3.png"),
+	],
+	"spitter": [
+		preload("res://assets/sprites/spitter_walk_0.png"),
+		preload("res://assets/sprites/spitter_walk_1.png"),
+		preload("res://assets/sprites/spitter_walk_2.png"),
+		preload("res://assets/sprites/spitter_walk_3.png"),
+	],
+	"brute": [
+		preload("res://assets/sprites/brute_walk_0.png"),
+		preload("res://assets/sprites/brute_walk_1.png"),
+		preload("res://assets/sprites/brute_walk_2.png"),
+		preload("res://assets/sprites/brute_walk_3.png"),
+	],
+}
+const PS1_HEIGHTS := {
+	"shambler": 38.0,
+	"sprinter": 40.0,
+	"spitter": 36.0,
+	"brute": 48.0,
+}
 
 const TYPES := {
 	"shambler": {"hp": 18.0, "speed": 52.0, "dmg": 8.0, "radius": 11.0, "xp": 1.0,
@@ -40,6 +72,7 @@ var draw_scale := 1.0
 
 
 func setup(m: Node2D, etype: String, pos: Vector2, hp_mult: float, dmg_mult: float, alpha: bool = false) -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	main = m
 	type = etype
 	position = pos
@@ -143,6 +176,7 @@ func _spitter_brain(to_player: Vector2, dist: float, delta: float) -> void:
 		glob.dmg = dmg * 1.2
 		glob.color = color
 		main.projectiles_node.add_child(glob)
+		Sfx.play("spit", -8.0)
 
 
 func _brute_brain(to_player: Vector2, delta: float) -> void:
@@ -170,6 +204,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.ZERO) -> void:
 		return
 	hp -= amount
 	flash = 0.12
+	Sfx.play("enemy_hit", -10.0)
 	if from != Vector2.ZERO and from != position:
 		var away := (position - from).normalized()
 		var kb := 140.0 * clampf(amount / max_hp, 0.08, 0.6)
@@ -182,6 +217,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.ZERO) -> void:
 
 func die() -> void:
 	dead = true
+	Sfx.play("enemy_die", -7.0, 0.6 if is_alpha else (0.8 if type == "brute" else 1.0))
 	main.on_enemy_killed(self)
 	main.spawn_fx("pop", position, radius * 1.4, color)
 	main.spawn_xp(position, xp_value)
@@ -207,68 +243,66 @@ func _draw() -> void:
 	var f := signf(main.player.position.x - position.x)
 	if f == 0.0:
 		f = 1.0
-	var c := color
-	var skin := color.lightened(0.15)
+	var edge := Color(0.055, 0.05, 0.045)
+	var sprite_modulate := Color(1, 1, 1, 1)
 	if flash > 0.0:
-		c = Color(1, 1, 1)
-		skin = Color(1, 1, 1)
-	var step := sin(anim_t)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(f * s, s))
+		sprite_modulate = Color(1.8, 1.8, 1.8, 1)
+	var sprite_height: float = PS1_HEIGHTS[type]
+	var frame := current_walk_frame()
+	# Source sprites face left; flip when the player is to the right.
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f * s, s))
 	# Shadow
-	_ellipse(Vector2(0, 12), Vector2(9, 3.5), Color(0, 0, 0, 0.3))
-	match type:
-		"shambler":
-			# Hunched: forward-leaning torso, long dangling arms.
-			draw_line(Vector2(-2, 4), Vector2(-4 + step * 2, 12), c.darkened(0.3), 2.5)
-			draw_line(Vector2(2, 4), Vector2(4 - step * 2, 12), c.darkened(0.3), 2.5)
-			draw_colored_polygon(PackedVector2Array([
-				Vector2(-5, 5), Vector2(-3, -5), Vector2(7, -8), Vector2(8, -2), Vector2(4, 6)]), c)
-			draw_line(Vector2(5, -4), Vector2(9 + step, 6), c.darkened(0.15), 2.5)
-			draw_circle(Vector2(8, -9), 4.0, skin)
-			draw_circle(Vector2(9.5, -9.5), 1.0, Color(0.9, 0.2, 0.1))
-		"sprinter":
-			# Tall and lanky, thin limbs.
-			draw_line(Vector2(-1, 2), Vector2(-4 + step * 4, 12), c.darkened(0.25), 2.0)
-			draw_line(Vector2(1, 2), Vector2(4 - step * 4, 12), c.darkened(0.25), 2.0)
-			draw_colored_polygon(PackedVector2Array([
-				Vector2(-3, 3), Vector2(-2, -9), Vector2(3, -9), Vector2(3, 3)]), c)
-			draw_line(Vector2(2, -7), Vector2(7, -2 + step * 3), c.darkened(0.15), 1.8)
-			draw_circle(Vector2(1, -12), 3.2, skin)
-			draw_circle(Vector2(2.3, -12.5), 0.9, Color(0.9, 0.2, 0.1))
-		"spitter":
-			# Squat with a bulbous head.
-			draw_line(Vector2(-3, 5), Vector2(-5 + step * 2, 11), c.darkened(0.3), 2.5)
-			draw_line(Vector2(3, 5), Vector2(5 - step * 2, 11), c.darkened(0.3), 2.5)
-			draw_colored_polygon(PackedVector2Array([
-				Vector2(-6, 6), Vector2(-5, -2), Vector2(5, -2), Vector2(6, 6)]), c)
-			draw_circle(Vector2(1, -7), 6.5, skin)
-			draw_circle(Vector2(-1, -9), 1.8, c.darkened(0.35))
-			draw_circle(Vector2(3, -5), 1.4, c.darkened(0.35))
-			draw_circle(Vector2(4, -8), 1.1, Color(0.9, 0.2, 0.1))
-		"brute":
-			# Broad shoulders, massive arms, small head.
-			draw_line(Vector2(-4, 6), Vector2(-6 + step * 2, 13), c.darkened(0.3), 4.0)
-			draw_line(Vector2(4, 6), Vector2(6 - step * 2, 13), c.darkened(0.3), 4.0)
-			draw_colored_polygon(PackedVector2Array([
-				Vector2(-10, -8), Vector2(10, -8), Vector2(6, 7), Vector2(-6, 7)]), c)
-			draw_line(Vector2(-9, -6), Vector2(-12, 6 + step * 2), c.darkened(0.15), 4.5)
-			draw_line(Vector2(9, -6), Vector2(12, 6 - step * 2), c.darkened(0.15), 4.5)
-			draw_circle(Vector2(0, -11), 3.5, skin)
-			draw_circle(Vector2(1.4, -11.5), 1.0, Color(1.0, 0.85, 0.2))
+	_ellipse(Vector2(0, 13), Vector2(maxf(radius * 0.9, 8.0), 3.8), Color(0, 0, 0, 0.34))
+	draw_ps1_sprite(frame, sprite_height, Vector2(0, 16.0 + sin(anim_t * 2.0) * 0.6), sprite_modulate)
+	if type == "brute" and (state == "telegraph" or state == "charge"):
+		draw_arc(Vector2.ZERO, 17.0, PI * 0.08, PI * 0.92, 18, Color(1.0, 0.75, 0.2, 0.55), 1.4)
+	if type == "sprinter" and (state == "aim" or state == "lunge"):
+		draw_line(Vector2(-9, 17), Vector2(9, 17), Color(1.0, 0.88, 0.25, 0.5), 1.0)
 	if is_alpha:
-		# Crown spikes mark minibosses.
-		for i in 3:
-			var bx := -6.0 + i * 6.0
-			draw_colored_polygon(PackedVector2Array([
-				Vector2(bx - 2, -13), Vector2(bx, -20), Vector2(bx + 2, -13)]),
-				Color(0.95, 0.85, 0.3))
+		_draw_alpha_mark(edge, sprite_height)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	# Health bar (alphas always; others only when hurt).
 	if is_alpha or hp < max_hp:
 		var w := radius * 2.0
-		var y := -radius - 10.0 * s
+		var y := minf(-radius - 10.0 * s, (16.0 - sprite_height) * s - 8.0)
 		draw_rect(Rect2(-w / 2, y, w, 3), Color(0, 0, 0, 0.5))
 		draw_rect(Rect2(-w / 2, y, w * clampf(hp / max_hp, 0, 1), 3), Color(0.9, 0.25, 0.2))
+
+
+func current_walk_frame() -> Texture2D:
+	var frames: Array = PS1_WALK_FRAMES[type]
+	if type == "sprinter" and state == "aim":
+		return frames[0]
+	if type == "brute" and state == "telegraph":
+		return frames[0]
+	var speed_mult := 1.0
+	if type == "sprinter" and state == "lunge":
+		speed_mult = 1.7
+	elif type == "brute" and state == "charge":
+		speed_mult = 1.35
+	return frames[int(anim_t * speed_mult) % frames.size()]
+
+
+func _draw_alpha_mark(edge: Color, sprite_height: float) -> void:
+	var gold := Color(0.98, 0.82, 0.22)
+	var base_y := 15.0 - sprite_height
+	for i in 4:
+		var bx := -7.5 + i * 5.0
+		_panel(PackedVector2Array([
+			Vector2(bx - 1.8, base_y), Vector2(bx, base_y - 7.0), Vector2(bx + 1.8, base_y)
+		]), gold, edge, 0.8)
+	draw_line(Vector2(-9, base_y - 1.0), Vector2(9, base_y - 1.0), edge, 1.5)
+	draw_line(Vector2(-8, base_y - 1.0), Vector2(8, base_y - 1.0), gold.darkened(0.05), 0.9)
+
+
+func draw_ps1_sprite(texture: Texture2D, target_height: float, foot: Vector2, modulate: Color) -> void:
+	var tex_size := texture.get_size()
+	var target_width := target_height * tex_size.x / tex_size.y
+	var rect := Rect2(
+		Vector2(-target_width * 0.5, foot.y - target_height),
+		Vector2(target_width, target_height)
+	)
+	draw_texture_rect(texture, rect, false, modulate)
 
 
 func _ellipse(center: Vector2, r: Vector2, col: Color) -> void:
@@ -277,3 +311,9 @@ func _ellipse(center: Vector2, r: Vector2, col: Color) -> void:
 		var a := TAU * i / 12.0
 		pts.append(center + Vector2(cos(a) * r.x, sin(a) * r.y))
 	draw_colored_polygon(pts, col)
+
+
+func _panel(pts: PackedVector2Array, fill: Color, edge: Color, width: float = 1.2) -> void:
+	draw_colored_polygon(pts, fill)
+	for i in pts.size():
+		draw_line(pts[i], pts[(i + 1) % pts.size()], edge, width)
