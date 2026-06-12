@@ -14,6 +14,7 @@ var sfx_volume := 1.0
 var screen_mode := 0  # index into SCREEN_MODES
 var fps_cap := 0      # actual cap value, 0 = unlimited
 var show_fps := false
+var screen_shake := true
 
 var _fps_label: Label
 var _fps_accum := 0.0
@@ -128,6 +129,7 @@ func save_data() -> void:
 		"screen_mode": screen_mode,
 		"fps_cap": fps_cap,
 		"show_fps": show_fps,
+		"screen_shake": screen_shake,
 	}
 	var f := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if f:
@@ -149,3 +151,4 @@ func load_data() -> void:
 	screen_mode = clampi(int(parsed.get("screen_mode", 0)), 0, SCREEN_MODES.size() - 1)
 	fps_cap = maxi(int(parsed.get("fps_cap", 0)), 0)
 	show_fps = bool(parsed.get("show_fps", false))
+	screen_shake = bool(parsed.get("screen_shake", true))

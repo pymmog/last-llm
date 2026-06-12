@@ -57,7 +57,7 @@ func _physics_process(_delta: float) -> void:
 			# Settings screen builds without errors.
 			var sm: Control = load("res://scenes/settings_menu.tscn").instantiate()
 			add_child(sm)
-			check(sm.panel.grid.get_child_count() == 12, "settings menu built (6 rows)")
+			check(sm.panel.grid.get_child_count() == 14, "settings menu built (7 rows)")
 			sm.queue_free()
 			# In-run settings reachable from the pause menu.
 			main.hud._open_settings()

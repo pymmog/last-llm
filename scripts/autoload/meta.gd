@@ -61,6 +61,16 @@ func record_run(time_survived: float, kills: int, scrap_earned: int, victory: bo
 	save_data()
 
 
+func reset() -> void:
+	scrap = 0
+	tiers = {}
+	best_time = 0.0
+	total_kills = 0
+	runs_played = 0
+	victories = 0
+	save_data()
+
+
 func save_data() -> void:
 	var data := {
 		"scrap": scrap,
