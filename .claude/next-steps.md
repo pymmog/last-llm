@@ -31,7 +31,10 @@ as items land.
    already persisted there).
 6. **A real final boss at 20:00** instead of a timer cutoff — survive the
    timer, then a multi-phase alpha with telegraphed patterns guards the
-   victory screen.
+   victory screen. Hooks are in place: the run timer now calls
+   `director.start_finale()` (stops wave spawning; currently instant win) —
+   spawn the boss there. Extend `enemy.gd` and override `_run_brain()` for
+   phases/patterns and `_drop_loot()` to call `main.end_run(true)`.
 
 ## P3 — Platform & distribution
 
@@ -52,7 +55,9 @@ as items land.
 10. **Object pooling** for projectiles, damage numbers, and FX nodes.
 11. **Refactor `enemy.gd`** if the roster grows past ~7 types — split
     behaviors ("brains") into small strategy objects instead of the `match`
-    blocks.
+    blocks. (Partially done: per-type `_*_brain()` methods behind an
+    overridable `_run_brain()` dispatch, loot extracted to `_drop_loot()`;
+    full strategy objects only if the roster demands it.)
 12. **Migrate magic numbers to a balance resource** (one `balance.gd` const
     table or custom Resource) so tuning passes don't touch five files.
 

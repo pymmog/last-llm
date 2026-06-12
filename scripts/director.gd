@@ -8,14 +8,21 @@ const MAX_ENEMIES := 240
 const SPAWN_MARGIN := 60.0    # how far past the view corner enemies appear
 const SPAWN_BAND := 120.0     # ring thickness
 
-const BOSS_TIMES := [180.0, 420.0, 660.0, 900.0, 1140.0]
-const BOSS_TYPES := ["shambler", "sprinter", "spitter", "brute", "brute"]
+# Alpha miniboss schedule: one scaled-up variant at each timestamp.
+const ALPHA_SCHEDULE := [
+	{"time": 180.0, "type": "shambler"},
+	{"time": 420.0, "type": "sprinter"},
+	{"time": 660.0, "type": "spitter"},
+	{"time": 900.0, "type": "brute"},
+	{"time": 1140.0, "type": "brute"},
+]
 
 var main: Node2D
 var spawn_timer := 0.5
 var recycle_timer := 1.0
-var boss_index := 0
+var alpha_index := 0
 var opening_done := false
+var finale_active := false
 
 
 func _physics_process(delta: float) -> void:
@@ -27,21 +34,32 @@ func _physics_process(delta: float) -> void:
 		opening_done = true
 		for i in 5:
 			spawn("shambler", false)
-	spawn_timer -= delta
-	if spawn_timer <= 0.0:
-		spawn_timer = spawn_interval(t)
-		for i in batch_size(t):
-			if main.enemies.size() >= MAX_ENEMIES:
-				break
-			spawn(pick_type(t), false)
-	if boss_index < BOSS_TIMES.size() and t >= BOSS_TIMES[boss_index]:
-		spawn(BOSS_TYPES[boss_index], true)
-		main.hud.show_banner("ALPHA %s INBOUND" % BOSS_TYPES[boss_index].to_upper())
-		boss_index += 1
+	if not finale_active:
+		spawn_timer -= delta
+		if spawn_timer <= 0.0:
+			spawn_timer = spawn_interval(t)
+			for i in batch_size(t):
+				if main.enemies.size() >= MAX_ENEMIES:
+					break
+				spawn(pick_type(t), false)
+		if alpha_index < ALPHA_SCHEDULE.size() and t >= ALPHA_SCHEDULE[alpha_index]["time"]:
+			var atype: String = ALPHA_SCHEDULE[alpha_index]["type"]
+			spawn(atype, true)
+			main.hud.show_banner("ALPHA %s INBOUND" % atype.to_upper())
+			alpha_index += 1
 	recycle_timer -= delta
 	if recycle_timer <= 0.0:
 		recycle_timer = 1.0
 		recycle_stragglers()
+
+
+func start_finale() -> void:
+	## Called by main when the run timer elapses. Wave spawning stops here;
+	## for now surviving the timer is an instant win. The planned final boss
+	## (next-steps #6) spawns here instead and calls main.end_run(true) from
+	## its _drop_loot()/death override.
+	finale_active = true
+	main.end_run(true)
 
 
 func spawn_interval(t: float) -> float:

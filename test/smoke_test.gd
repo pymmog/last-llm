@@ -110,9 +110,17 @@ func _physics_process(_delta: float) -> void:
 		140:
 			# Alpha XP gems may have leveled the player already; resolve those
 			# picks so the crate offer below is shown on its own.
+			# Avoid evolve cards while draining: the rivet evolution must stay
+			# available for the crate-offer assertions below.
 			var drain := 0
 			while main.hud.levelup_panel.visible and drain < 32:
-				(main.hud.cards_box.get_child(0) as Button).pressed.emit()
+				var pick: Button = main.hud.cards_box.get_child(0)
+				for c in main.hud.cards_box.get_children():
+					var title: Label = c.get_child(0).get_child(1)
+					if not title.text.begins_with("EVOLVE"):
+						pick = c
+						break
+				pick.pressed.emit()
 				drain += 1
 			check(not main.hud.levelup_panel.visible, "pending level-ups drained")
 			# Alpha dropped a crate; walk over everything via forced collection.
