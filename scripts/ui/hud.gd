@@ -68,9 +68,9 @@ func _build_bars() -> void:
 	xp_bg.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	xp_bg.offset_bottom = 24
 	root.add_child(xp_bg)
-	xp_fill = _bar_fill(Color(0.25, 0.9, 0.85))
+	xp_fill = _bar_fill(Color(0.32, 0.95, 0.9))
 	xp_bg.add_child(xp_fill)
-	level_label = _label(root, Vector2(1180, 28), 16, Color(0.6, 1.0, 0.95))
+	level_label = _label(root, Vector2(1180, 28), 16, Color(0.54, 1.0, 0.94))
 	level_label.text = "LV 1"
 
 	# HP bar top-left, same skin tinted red.
@@ -85,10 +85,10 @@ func _build_bars() -> void:
 	god_label.text = "GOD"
 	god_label.visible = false
 
-	timer_label = _label(root, Vector2(600, 22), 26, Color(0.95, 0.92, 0.85))
+	timer_label = _label(root, Vector2(600, 22), 26, Color(0.95, 0.9, 0.78))
 	timer_label.text = "00:00"
-	kills_label = _label(root, Vector2(16, 58), 14, Color(0.9, 0.65, 0.6))
-	scrap_label = _label(root, Vector2(16, 78), 14, Color(0.8, 0.8, 0.8))
+	kills_label = _label(root, Vector2(16, 58), 14, Color(0.95, 0.55, 0.32))
+	scrap_label = _label(root, Vector2(16, 78), 14, Color(0.76, 0.8, 0.76))
 
 	banner = _label(root, Vector2(0, 160), 28, Color(1.0, 0.85, 0.3))
 	banner.set_anchors_preset(Control.PRESET_TOP_WIDE)
@@ -210,7 +210,7 @@ func _build_levelup() -> void:
 	var title := Label.new()
 	title.text = "SYSTEM UPGRADE AVAILABLE"
 	title.add_theme_font_size_override("font_size", 26)
-	title.add_theme_color_override("font_color", Color(0.4, 1.0, 0.9))
+	title.add_theme_color_override("font_color", Color(0.54, 1.0, 0.94))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	cards_box = HBoxContainer.new()
@@ -227,6 +227,7 @@ func on_level_up() -> void:
 func _show_levelup() -> void:
 	get_tree().paused = true
 	for c in cards_box.get_children():
+		cards_box.remove_child(c)  # detach now so get_child(0) below is a new card
 		c.queue_free()
 	var count := 3 + Meta.tier("choices")
 	var choices: Array = Upgrades.build_choices(main.player, count)
@@ -315,7 +316,7 @@ func _build_settings() -> void:
 	var title := Label.new()
 	title.text = "SETTINGS"
 	title.add_theme_font_size_override("font_size", 30)
-	title.add_theme_color_override("font_color", Color(0.9, 0.55, 0.2))
+	title.add_theme_color_override("font_color", Color(1.0, 0.58, 0.18))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 	settings_controls = SettingsPanel.new()

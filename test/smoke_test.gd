@@ -11,6 +11,7 @@ const Upgrades := preload("res://scripts/upgrades.gd")
 var main: Node2D
 var frame := 0
 var failures := 0
+var cards_clicked := 0
 
 
 func _ready() -> void:
@@ -33,7 +34,13 @@ func _physics_process(_delta: float) -> void:
 	# Click through level-up cards until all pending levels are resolved.
 	if frame > 165 and frame < 300 and main.hud.levelup_panel.visible:
 		var card: Button = main.hud.cards_box.get_child(0)
+		if cards_clicked == 1:
+			# Regression: stale queued-free cards used to steal the focus seed
+			# on every re-shown panel, breaking keyboard/gamepad selection.
+			check(get_viewport().gui_get_focus_owner() == card,
+				"re-shown level-up card regains keyboard focus")
 		card.pressed.emit()
+		cards_clicked += 1
 	match frame:
 		5:
 			check(AudioServer.get_bus_index("Music") >= 0, "music bus created")
