@@ -54,13 +54,15 @@ static func make() -> Theme:
 static func setup_overlay(o: Control) -> void:
 	## Styles a Control as a hidden fullscreen overlay: themed, nearest-filtered,
 	## with a dimming backdrop. Used by every in-run modal panel.
+	## Anchors AND offsets are forced so this also works on controls that are
+	## already inside the tree (e.g. a panel styling itself in _ready).
 	o.theme = make()
 	o.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	o.set_anchors_preset(Control.PRESET_FULL_RECT)
+	o.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	o.visible = false
 	var dim := ColorRect.new()
 	dim.color = Color(0, 0, 0, 0.6)
-	dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	o.add_child(dim)
 
 
@@ -74,7 +76,7 @@ static func overlay(parent: Node) -> Control:
 static func center_panel(overlay_node: Control) -> VBoxContainer:
 	## Centered riveted-metal panel inside an overlay; returns its content box.
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay_node.add_child(center)
 	var panel := PanelContainer.new()
 	center.add_child(panel)
