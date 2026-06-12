@@ -37,6 +37,9 @@ var xp := 0.0
 var xp_needed := 10.0
 var pending_levels := 0
 
+var shield_ready := false
+var shield_timer := 0.0
+
 var radius := 12.0
 var god_mode := false  # dev debug: ignore all incoming damage
 var invuln := 0.0
@@ -75,6 +78,12 @@ func _physics_process(delta: float) -> void:
 		anim_t += delta * 10.0
 	if regen > 0.0:
 		hp = minf(hp + regen * delta, max_hp)
+	if passive_level("deflector") > 0 and not shield_ready:
+		shield_timer -= delta
+		if shield_timer <= 0.0:
+			shield_ready = true
+			Sfx.play("shield_up", -4.0)
+			main.spawn_fx("ring", position, 26.0, Color(0.35, 0.85, 1.0))
 	invuln = maxf(invuln - delta, 0.0)
 	queue_redraw()
 
@@ -107,6 +116,12 @@ func add_passive(id: String) -> void:
 	recompute_stats()
 	if id == "chassis":
 		heal(20.0)
+	elif id == "deflector" and was == 0:
+		shield_ready = true
+
+
+func shield_recharge_time() -> float:
+	return 16.0 - 2.5 * (passive_level("deflector") - 1)
 
 
 func add_weapon(id: String) -> void:
@@ -148,6 +163,15 @@ func add_xp(value: float) -> void:
 
 func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
 	if invuln > 0.0 or main.run_over or god_mode:
+		return
+	if shield_ready:
+		shield_ready = false
+		shield_timer = shield_recharge_time()
+		invuln = 0.6
+		Sfx.play("shield_break", -2.0)
+		main.spawn_fx("ring", position, 34.0, Color(0.35, 0.85, 1.0))
+		main.spawn_fx("spark", position, 12.0, Color(0.5, 0.9, 1.0))
+		queue_redraw()
 		return
 	var dealt := maxf(amount - armor, 1.0)
 	hp -= dealt
@@ -194,6 +218,12 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f, 1.0))
 	draw_ps1_sprite(frame, PS1_SPRITE_HEIGHT, foot, modulate)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
+	if shield_ready:
+		var pulse := 0.45 + 0.15 * sin(Time.get_ticks_msec() * 0.005)
+		var sc := Color(0.35, 0.85, 1.0)
+		draw_arc(Vector2(0, -6), 24.0, 0.0, TAU, 32, Color(sc.r, sc.g, sc.b, pulse), 1.5)
+		draw_arc(Vector2(0, -6), 27.0, 0.0, TAU, 32, Color(sc.r, sc.g, sc.b, pulse * 0.3), 3.0)
 
 
 func draw_ellipse_approx(center: Vector2, r: Vector2, color: Color) -> void:

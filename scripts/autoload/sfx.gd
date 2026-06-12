@@ -149,6 +149,17 @@ func _generate_all() -> void:
 	_sweep(b, 440, 880, 0, 0.20, 0.8)
 	_streams["heal"] = _wav(b)
 
+	# Deflector recharge: bright rising shimmer.
+	b = _buf(0.25)
+	_sweep(b, 600, 1400, 3, 0.18, 0.9)
+	_streams["shield_up"] = _wav(b)
+
+	# Deflector break: metallic clang with a fizzle tail.
+	b = _buf(0.28)
+	_sweep(b, 950, 220, 1, 0.22, 1.8)
+	_noise(b, 0.28, 0.7, 2.5)
+	_streams["shield_break"] = _wav(b)
+
 	# Magnet: long vacuum sweep.
 	b = _buf(0.35)
 	_sweep(b, 250, 1300, 0, 0.18, 0.6)

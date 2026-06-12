@@ -5,7 +5,7 @@ const WEAPONS := {
 	"rivet": {"name": "Rivet Gun", "script": "res://scripts/weapons/rivet_gun.gd",
 		"desc": "Fires rivets at the nearest mutant", "pair": "tungsten", "evolved": "Railspike Driver"},
 	"saw": {"name": "Scrap Saw", "script": "res://scripts/weapons/scrap_saw.gd",
-		"desc": "Saw blades orbit you", "pair": "plating", "evolved": "Buzzkill Halo"},
+		"desc": "Bursts of orbiting saw blades", "pair": "plating", "evolved": "Buzzkill Halo"},
 	"tesla": {"name": "Tesla Arc", "script": "res://scripts/weapons/tesla_arc.gd",
 		"desc": "Chain lightning between mutants", "pair": "capacitor", "evolved": "Storm Coil"},
 	"mortar": {"name": "Plasma Mortar", "script": "res://scripts/weapons/plasma_mortar.gd",
@@ -26,6 +26,7 @@ const PASSIVES := {
 	"core": {"name": "Power Core", "max": 5, "desc": "+8% damage"},
 	"legs": {"name": "Hydraulic Legs", "max": 5, "desc": "+8% move speed"},
 	"magnet": {"name": "Magnet Coil", "max": 5, "desc": "+20% pickup radius"},
+	"deflector": {"name": "Deflector Field", "max": 5, "desc": "Blocks 1 hit, recharges faster"},
 }
 
 const MAX_WEAPON_SLOTS := 4
