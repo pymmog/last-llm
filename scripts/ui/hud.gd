@@ -16,6 +16,8 @@ var kills_label: Label
 var scrap_label: Label
 var banner: Label
 var banner_t := 0.0
+var damage_flash: ColorRect
+var damage_flash_t := 0.0
 
 var levelup_panel: Control
 var cards_box: HBoxContainer
@@ -37,6 +39,13 @@ func _build_bars() -> void:
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
+
+	# Red flash over the whole screen when the player takes a hit.
+	damage_flash = ColorRect.new()
+	damage_flash.color = Color(0.9, 0.12, 0.08, 0.0)
+	damage_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	damage_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(damage_flash)
 
 	# XP bar across the top.
 	xp_bg = ColorRect.new()
@@ -110,6 +119,9 @@ func _process(delta: float) -> void:
 	if banner_t > 0.0:
 		banner_t -= delta
 		banner.modulate.a = clampf(banner_t / 0.5, 0.0, 1.0)
+	if damage_flash_t > 0.0:
+		damage_flash_t -= delta
+		damage_flash.color.a = clampf(damage_flash_t / 0.35, 0.0, 1.0) * 0.28
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -120,6 +132,10 @@ func _unhandled_input(event: InputEvent) -> void:
 func show_banner(text: String) -> void:
 	banner.text = text
 	banner_t = 2.6
+
+
+func flash_damage() -> void:
+	damage_flash_t = 0.35
 
 
 # ---------------------------------------------------------------- level up

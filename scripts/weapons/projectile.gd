@@ -58,7 +58,7 @@ func _physics_process(delta: float) -> void:
 			_hit[e.get_instance_id()] = true
 			pierce -= 1
 			if pierce < 0:
-				main.spawn_fx("pop", position, 8.0, modulate_color())
+				main.spawn_fx("spark", position, 8.0, modulate_color(), PackedVector2Array(), vel.normalized())
 				queue_free()
 				return
 	queue_redraw()
