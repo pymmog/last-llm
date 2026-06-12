@@ -28,6 +28,7 @@ var is_alpha := false
 var dead := false
 
 var flash := 0.0
+var knockback := Vector2.ZERO
 var attack_cd := 0.0
 var state := "walk"
 var state_t := 0.0
@@ -84,9 +85,23 @@ func _physics_process(delta: float) -> void:
 		"brute":
 			_brute_brain(to_player, delta)
 
+	# Knockback from weapon hits decays exponentially.
+	if knockback != Vector2.ZERO:
+		position += knockback * delta
+		knockback *= maxf(1.0 - 8.0 * delta, 0.0)
+
+	# Solid bodies: never overlap the player, stop at its edge.
+	var sep := position - player.position
+	var min_dist: float = radius + player.radius
+	if sep.length_squared() < min_dist * min_dist:
+		var d := sep.length()
+		var away := sep / d if d > 0.001 else Vector2.from_angle(randf() * TAU)
+		position = player.position + away * min_dist
+		dist = min_dist
+
 	# Contact damage.
 	if attack_cd <= 0.0 and dist < radius + player.radius + 2.0:
-		player.take_damage(dmg)
+		player.take_damage(dmg, position)
 		attack_cd = 0.8
 	queue_redraw()
 
@@ -150,11 +165,16 @@ func _brute_brain(to_player: Vector2, delta: float) -> void:
 				state_t = 0.0
 
 
-func take_damage(amount: float, _from: Vector2 = Vector2.ZERO) -> void:
+func take_damage(amount: float, from: Vector2 = Vector2.ZERO) -> void:
 	if dead:
 		return
 	hp -= amount
 	flash = 0.12
+	if from != Vector2.ZERO and from != position:
+		var away := (position - from).normalized()
+		var kb := 140.0 * clampf(amount / max_hp, 0.08, 0.6)
+		knockback += away * (kb * 0.25 if is_alpha else kb)
+		main.spawn_fx("spark", position, radius * 0.8, color.lightened(0.3), PackedVector2Array(), away)
 	main.add_damage_number(position - Vector2(0, radius), amount)
 	if hp <= 0.0:
 		die()

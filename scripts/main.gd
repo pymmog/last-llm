@@ -3,6 +3,9 @@ extends Node2D
 ## spatial queries + spawning services to everything else.
 
 const RUN_DURATION := 20.0 * 60.0
+# Cell size for the enemy-separation spatial hash. Must cover the widest
+# possible overlapping pair (two alpha brutes ~ 70 px) from adjacent cells.
+const SEP_CELL := 72.0
 
 const PlayerScript := preload("res://scripts/player.gd")
 const DirectorScript := preload("res://scripts/director.gd")
@@ -28,6 +31,7 @@ var kills := 0
 var scrap_earned := 0
 var run_over := false
 var shake_amount := 0.0
+var _hitstop_active := false
 
 
 func _ready() -> void:
@@ -83,6 +87,7 @@ func _physics_process(delta: float) -> void:
 		if is_instance_valid(e) and not e.dead:
 			alive.append(e)
 	enemies = alive
+	_separate_enemies()
 	# Camera shake decay.
 	if shake_amount > 0.0:
 		shake_amount = maxf(shake_amount - 30.0 * delta, 0.0)
@@ -93,8 +98,57 @@ func _physics_process(delta: float) -> void:
 		player.camera.offset = Vector2.ZERO
 
 
+func _separate_enemies() -> void:
+	## Soft mob-vs-mob collision: bin enemies into a spatial hash, then push
+	## each one out of overlapping neighbors. Each pair is visited from both
+	## sides and each side moves half the overlap, so pairs fully separate.
+	var grid: Dictionary = {}
+	for e in enemies:
+		var key := Vector2i((e.position / SEP_CELL).floor())
+		if grid.has(key):
+			grid[key].append(e)
+		else:
+			grid[key] = [e]
+	for e in enemies:
+		var pos: Vector2 = e.position
+		var cell := Vector2i((pos / SEP_CELL).floor())
+		var push := Vector2.ZERO
+		for ox in [-1, 0, 1]:
+			for oy in [-1, 0, 1]:
+				var k := cell + Vector2i(ox, oy)
+				if not grid.has(k):
+					continue
+				for other in grid[k]:
+					if other == e:
+						continue
+					var sep: Vector2 = pos - other.position
+					var min_d: float = e.radius + other.radius - 2.0  # tiny overlap so crowds pack
+					var d2 := sep.length_squared()
+					if d2 < min_d * min_d:
+						var d := sqrt(d2)
+						var away := sep / d if d > 0.001 else Vector2.from_angle(randf() * TAU)
+						push += away * (min_d - d) * 0.5
+		if push != Vector2.ZERO:
+			e.position = pos + push
+
+
 func add_shake(amount: float) -> void:
 	shake_amount = minf(shake_amount + amount, 14.0)
+
+
+func hitstop(duration := 0.05) -> void:
+	if _hitstop_active:
+		return
+	_hitstop_active = true
+	Engine.time_scale = 0.05
+	var timer := get_tree().create_timer(duration, true, false, true)
+	timer.timeout.connect(func() -> void:
+		Engine.time_scale = 1.0
+		_hitstop_active = false)
+
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
 
 
 # ---------------------------------------------------------------- queries
@@ -182,13 +236,16 @@ func spawn_pickup(kind: String, pos: Vector2, value: int = 0) -> void:
 	pickups_node.add_child(p)
 
 
-func spawn_fx(kind: String, pos: Vector2, radius: float = 24.0, color: Color = Color.WHITE, points: PackedVector2Array = PackedVector2Array()) -> void:
+func spawn_fx(kind: String, pos: Vector2, radius: float = 24.0, color: Color = Color.WHITE, points: PackedVector2Array = PackedVector2Array(), dir: Vector2 = Vector2.ZERO) -> void:
+	if fx_node.get_child_count() > 300:
+		return
 	var fx: Node2D = FxScript.new()
 	fx.main = self
 	fx.kind = kind
 	fx.radius = radius
 	fx.color = color
 	fx.points = points
+	fx.dir = dir
 	fx.position = pos
 	fx_node.add_child(fx)
 

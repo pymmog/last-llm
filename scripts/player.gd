@@ -136,17 +136,24 @@ func add_xp(value: float) -> void:
 		main.hud.on_level_up()
 
 
-func take_damage(amount: float) -> void:
+func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
 	if invuln > 0.0 or main.run_over:
 		return
 	var dealt := maxf(amount - armor, 1.0)
 	hp -= dealt
 	invuln = 0.4
-	main.add_shake(5.0)
+	var hit_dir := (position - from).normalized() if from.is_finite() else Vector2.from_angle(randf() * TAU)
+	main.add_shake(6.0)
+	main.hitstop(0.05)
+	main.spawn_fx("spark", position, 16.0, Color(1.0, 0.75, 0.3), PackedVector2Array(), hit_dir)
+	main.hud.flash_damage()
 	main.add_damage_number(position, dealt, Color(1.0, 0.35, 0.3))
 	if hp <= 0.0:
 		hp = 0.0
+		main.add_shake(14.0)
 		main.spawn_fx("pop", position, 40.0, Color(1.0, 0.5, 0.2))
+		main.spawn_fx("ring", position, 70.0, Color(1.0, 0.4, 0.2))
+		main.spawn_fx("spark", position, 30.0, Color(1.0, 0.6, 0.2))
 		main.end_run(false)
 	queue_redraw()
 

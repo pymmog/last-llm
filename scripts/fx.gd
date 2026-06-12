@@ -1,18 +1,21 @@
 extends Node2D
 ## Lightweight one-shot effects: pop (death burst), ring (explosion / level
-## up), lightning (tesla polyline), burn (damaging ground patch).
+## up), lightning (tesla polyline), burn (damaging ground patch), spark
+## (directional impact debris), splat (acid glob impact).
 
 var main: Node2D
 var kind := "pop"
 var radius := 24.0
 var color := Color.WHITE
 var points := PackedVector2Array()
+var dir := Vector2.ZERO
 var life := 0.35
 var burn_dps := 0.0
 
 var t := 0.0
 var _tick := 0.0
 var _jitter: Array = []
+var _parts: Array = []
 
 
 func _ready() -> void:
@@ -27,6 +30,19 @@ func _ready() -> void:
 			life = 0.35
 		"pop":
 			life = 0.3
+		"spark":
+			life = 0.32
+			var n := 5 + int(radius / 5.0)
+			for i in n:
+				var a := randf() * TAU
+				if dir != Vector2.ZERO:
+					a = dir.angle() + randf_range(-0.9, 0.9)
+				_parts.append(Vector2.from_angle(a) * radius * randf_range(3.0, 7.0))
+		"splat":
+			life = 0.5
+			for i in 8:
+				var a2 := randf() * TAU
+				_parts.append(Vector2.from_angle(a2) * radius * randf_range(0.8, 2.6))
 
 
 func _physics_process(delta: float) -> void:
@@ -66,6 +82,20 @@ func _draw() -> void:
 				draw_line(a2, mid, c3, 2.0)
 				draw_line(mid, b, c3, 2.0)
 				draw_line(a2, b, Color(c3.r, c3.g, c3.b, c3.a * 0.3), 4.0)
+		"spark":
+			var cs := Color(color.r, color.g, color.b, fade)
+			for v in _parts:
+				var p: Vector2 = v * t + Vector2(0, 90.0) * t * t
+				draw_line(p, p - v * 0.05 * fade, cs, 1.8)
+				draw_circle(p, 1.2 * fade, Color(1, 1, 0.9, fade))
+			if k < 0.3:
+				draw_circle(Vector2.ZERO, radius * 0.5 * (1.0 - k / 0.3), Color(1, 1, 1, 0.85))
+		"splat":
+			var spread := 1.0 - pow(1.0 - k, 2.0)
+			var cd := Color(color.r, color.g, color.b, fade * 0.9)
+			draw_circle(Vector2.ZERO, radius * 0.7 * (1.0 - k * 0.4), Color(color.r, color.g, color.b, fade * 0.5))
+			for v in _parts:
+				draw_circle(v * spread, 2.6 * fade + 0.4, cd)
 		"burn":
 			var flicker := 0.75 + 0.25 * sin(t * 23.0)
 			var c4 := Color(color.r, color.g, color.b, fade * 0.3 * flicker)

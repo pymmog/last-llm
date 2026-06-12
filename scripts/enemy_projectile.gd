@@ -15,12 +15,14 @@ func _physics_process(delta: float) -> void:
 	position += vel * delta
 	life -= delta
 	if life <= 0.0:
+		main.spawn_fx("splat", position, 8.0, color)
 		queue_free()
 		return
 	var player: Node2D = main.player
 	if position.distance_squared_to(player.position) < pow(6.0 + player.radius, 2.0):
-		player.take_damage(dmg)
-		main.spawn_fx("pop", position, 10.0, color)
+		player.take_damage(dmg, position - vel * 0.1)
+		main.spawn_fx("splat", position, 14.0, color)
+		main.spawn_fx("spark", position, 10.0, color.lightened(0.2), PackedVector2Array(), vel.normalized())
 		queue_free()
 	queue_redraw()
 

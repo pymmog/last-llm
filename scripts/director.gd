@@ -5,8 +5,8 @@ extends Node
 const EnemyScript := preload("res://scripts/enemy.gd")
 
 const MAX_ENEMIES := 240
-const SPAWN_DIST_MIN := 520.0
-const SPAWN_DIST_MAX := 640.0
+const SPAWN_MARGIN := 60.0    # how far past the view corner enemies appear
+const SPAWN_BAND := 120.0     # ring thickness
 
 const BOSS_TIMES := [180.0, 420.0, 660.0, 900.0, 1140.0]
 const BOSS_TYPES := ["shambler", "sprinter", "spitter", "brute", "brute"]
@@ -81,9 +81,17 @@ func spawn(etype: String, alpha: bool) -> void:
 	main.register_enemy(e)
 
 
+func spawn_min_dist() -> float:
+	## Half the camera view's diagonal plus a margin: the closest distance
+	## from the player that is guaranteed to be off-screen.
+	var view: Vector2 = get_viewport().get_visible_rect().size / main.player.camera.zoom
+	return view.length() * 0.5 + SPAWN_MARGIN
+
+
 func ring_position() -> Vector2:
 	var a := randf() * TAU
-	var d := randf_range(SPAWN_DIST_MIN, SPAWN_DIST_MAX)
+	var min_d := spawn_min_dist()
+	var d := randf_range(min_d, min_d + SPAWN_BAND)
 	return main.player.position + Vector2(cos(a), sin(a)) * d
 
 
@@ -91,8 +99,9 @@ func recycle_stragglers() -> void:
 	## Enemies left far behind get teleported back to the spawn ring,
 	## keeping pressure on without unbounded wandering.
 	var p: Vector2 = main.player.position
+	var limit := spawn_min_dist() + SPAWN_BAND + 280.0
 	for e in main.enemies:
 		if not is_instance_valid(e) or e.dead or e.is_alpha:
 			continue
-		if e.position.distance_squared_to(p) > 950.0 * 950.0:
+		if e.position.distance_squared_to(p) > limit * limit:
 			e.position = ring_position()
