@@ -1,10 +1,24 @@
 extends Node2D
 ## Endless wasteland floor: cracked earth, rocks, debris and bones scattered
-## deterministically per grid cell around the camera. No texture assets.
+## deterministically per grid cell around the camera. Props use the generated
+## PS1 sprite set (tools/generate_ps1_sprites.gd); cracks and dirt stay vector.
 
 const CELL := 120.0
+const SPRITE_SCALE := 3  # generated PNGs are saved at 3x their logical size
+
+const PROPS := {
+	"rock_a": preload("res://assets/sprites/prop_rock_a.png"),
+	"rock_b": preload("res://assets/sprites/prop_rock_b.png"),
+	"bones": preload("res://assets/sprites/prop_bones.png"),
+	"shrub": preload("res://assets/sprites/prop_shrub.png"),
+	"plate": preload("res://assets/sprites/prop_plate.png"),
+}
 
 var _last_cam := Vector2(99999, 99999)
+
+
+func _ready() -> void:
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 
 func _process(_delta: float) -> void:
@@ -54,30 +68,32 @@ func _draw_cell(cx: int, cy: int) -> void:
 				q = nq
 		4:
 			# Rock.
-			draw_colored_polygon(PackedVector2Array([
-				p + Vector2(-9, 4), p + Vector2(-4, -7), p + Vector2(6, -5),
-				p + Vector2(9, 3), p + Vector2(2, 7)]), Color(0.24, 0.22, 0.2))
-			draw_colored_polygon(PackedVector2Array([
-				p + Vector2(-4, -2), p + Vector2(2, -5), p + Vector2(5, 0)]),
-				Color(0.3, 0.28, 0.26))
+			_draw_prop("rock_a" if (h >> 7) & 1 else "rock_b", p, h)
 		5:
 			# Bones.
-			draw_line(p, p + Vector2(14, 5), Color(0.55, 0.52, 0.46), 2.5)
-			draw_circle(p + Vector2(16, 6), 3.0, Color(0.55, 0.52, 0.46))
-			draw_circle(p + Vector2(-2, -1), 2.2, Color(0.55, 0.52, 0.46))
+			_draw_prop("bones", p, h)
 		6:
 			# Dead shrub.
-			for i in 4:
-				var a2 := -PI * 0.5 + (float(i) - 1.5) * 0.5
-				draw_line(p, p + Vector2(cos(a2), sin(a2)) * 11.0, Color(0.27, 0.2, 0.12), 1.5)
+			_draw_prop("shrub", p, h)
 		7:
 			# Scrap plate.
-			draw_rect(Rect2(p.x, p.y, 13, 9), Color(0.22, 0.21, 0.22))
-			draw_rect(Rect2(p.x + 2, p.y + 2, 3, 2), Color(0.45, 0.3, 0.2))
+			_draw_prop("plate", p, h)
 		_:
 			# Pebbles.
 			draw_circle(p, 2.2, Color(0.2, 0.18, 0.15))
 			draw_circle(p + Vector2(7, 4), 1.6, Color(0.2, 0.18, 0.15))
+
+
+func _draw_prop(name: String, p: Vector2, h: int) -> void:
+	var tex: Texture2D = PROPS[name]
+	# 1.6x: keeps the chunky pixels readable against the dark floor.
+	var size := tex.get_size() / SPRITE_SCALE * 1.6
+	var rect := Rect2(p - size * 0.5, size)
+	if (h >> 9) & 1:
+		rect.position.x += size.x
+		rect.size.x = -size.x
+	# Slightly darkened so ground props never compete with actors.
+	draw_texture_rect(tex, rect, false, Color(0.92, 0.9, 0.88))
 
 
 func _hash(x: int, y: int) -> int:

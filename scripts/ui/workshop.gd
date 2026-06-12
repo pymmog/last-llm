@@ -1,11 +1,15 @@
 extends Control
 ## Workshop: spend banked scrap on permanent unlocks (Meta autoload).
 
+const UiTheme := preload("res://scripts/ui/ui_theme.gd")
+
 var scrap_label: Label
 var rows: Dictionary = {}  # id -> {pips: Label, btn: Button}
 
 
 func _ready() -> void:
+	theme = UiTheme.make()
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var bg := ColorRect.new()
 	bg.color = Color(0.10, 0.085, 0.07)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -37,10 +41,20 @@ func _ready() -> void:
 	var back := Button.new()
 	back.text = "BACK"
 	back.custom_minimum_size = Vector2(200, 44)
-	back.pressed.connect(func() -> void:
-		get_tree().change_scene_to_file("res://scenes/main_menu.tscn"))
+	back.pressed.connect(_back)
 	box.add_child(back)
 	_refresh()
+	var first_id: String = Meta.UPGRADES.keys()[0]
+	(rows[first_id]["btn"] as Button).grab_focus.call_deferred()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		_back()
+
+
+func _back() -> void:
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 func _build_row(id: String) -> Control:

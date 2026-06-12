@@ -1,7 +1,12 @@
 extends Control
 ## Title screen. UI is built in code; the backdrop is the wasteland palette.
 
+const UiTheme := preload("res://scripts/ui/ui_theme.gd")
+
+
 func _ready() -> void:
+	theme = UiTheme.make()
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var bg := ColorRect.new()
 	bg.color = Color(0.10, 0.085, 0.07)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -30,8 +35,11 @@ func _ready() -> void:
 	box.add_child(sub)
 
 	box.add_child(_spacer(24))
-	box.add_child(_button("START RUN", _on_start))
+	var start := _button("START RUN", _on_start)
+	box.add_child(start)
+	start.grab_focus.call_deferred()
 	box.add_child(_button("WORKSHOP", _on_workshop))
+	box.add_child(_button("SETTINGS", _on_settings))
 	box.add_child(_button("QUIT", _on_quit))
 	box.add_child(_spacer(24))
 
@@ -73,6 +81,10 @@ func _on_start() -> void:
 
 func _on_workshop() -> void:
 	get_tree().change_scene_to_file("res://scenes/workshop.tscn")
+
+
+func _on_settings() -> void:
+	get_tree().change_scene_to_file("res://scenes/settings_menu.tscn")
 
 
 func _on_quit() -> void:
