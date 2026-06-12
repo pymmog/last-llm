@@ -33,6 +33,7 @@ func _physics_process(delta: float) -> void:
 		pull_speed = minf(pull_speed + 900.0 * delta, 760.0)
 		position += to_player.normalized() * pull_speed * delta
 		if d2 < 18.0 * 18.0:
+			Sfx.play("xp", -8.0)
 			player.add_xp(value)
 			queue_free()
 			return

@@ -176,6 +176,7 @@ func _spitter_brain(to_player: Vector2, dist: float, delta: float) -> void:
 		glob.dmg = dmg * 1.2
 		glob.color = color
 		main.projectiles_node.add_child(glob)
+		Sfx.play("spit", -8.0)
 
 
 func _brute_brain(to_player: Vector2, delta: float) -> void:
@@ -203,6 +204,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.ZERO) -> void:
 		return
 	hp -= amount
 	flash = 0.12
+	Sfx.play("enemy_hit", -10.0)
 	if from != Vector2.ZERO and from != position:
 		var away := (position - from).normalized()
 		var kb := 140.0 * clampf(amount / max_hp, 0.08, 0.6)
@@ -215,6 +217,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.ZERO) -> void:
 
 func die() -> void:
 	dead = true
+	Sfx.play("enemy_die", -7.0, 0.6 if is_alpha else (0.8 if type == "brute" else 1.0))
 	main.on_enemy_killed(self)
 	main.spawn_fx("pop", position, radius * 1.4, color)
 	main.spawn_xp(position, xp_value)

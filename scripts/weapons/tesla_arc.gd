@@ -57,6 +57,8 @@ func fire() -> bool:
 			break
 		fired = true
 		_zap_chain(start)
+	if fired:
+		Sfx.play("tesla", -5.0)
 	return fired
 
 

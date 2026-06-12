@@ -140,6 +140,7 @@ func add_xp(value: float) -> void:
 		pending_levels += 1
 		leveled = true
 	if leveled:
+		Sfx.play("level_up")
 		main.spawn_fx("ring", position, 40.0, Color(0.3, 1.0, 0.9))
 		main.hud.on_level_up()
 
@@ -150,6 +151,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
 	var dealt := maxf(amount - armor, 1.0)
 	hp -= dealt
 	invuln = 0.4
+	Sfx.play("player_hurt", -2.0)
 	var hit_dir := (position - from).normalized() if from.is_finite() else Vector2.from_angle(randf() * TAU)
 	main.add_shake(6.0)
 	main.hitstop(0.05)
@@ -158,6 +160,7 @@ func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
 	main.add_damage_number(position, dealt, Color(1.0, 0.35, 0.3))
 	if hp <= 0.0:
 		hp = 0.0
+		Sfx.play("player_die")
 		main.add_shake(14.0)
 		main.spawn_fx("pop", position, 40.0, Color(1.0, 0.5, 0.2))
 		main.spawn_fx("ring", position, 70.0, Color(1.0, 0.4, 0.2))

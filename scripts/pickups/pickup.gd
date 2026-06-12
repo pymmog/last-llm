@@ -37,13 +37,16 @@ func collect(player: Node2D) -> void:
 	match kind:
 		"medkit":
 			player.heal(player.max_hp * 0.25)
+			Sfx.play("heal")
 		"scrap":
 			main.scrap_earned += value
 			main.add_damage_number(position, value, Color(0.85, 0.85, 0.85))
+			Sfx.play("pickup", -4.0)
 		"magnet":
 			for gem in get_tree().get_nodes_in_group("xp_gems"):
 				gem.force_attract()
 			main.spawn_fx("ring", position, 60.0, Color(0.4, 0.6, 1.0))
+			Sfx.play("magnet")
 		"crate":
 			main.open_crate()
 	main.spawn_fx("pop", position, 14.0, Color(1, 1, 1))

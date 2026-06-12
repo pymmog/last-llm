@@ -264,6 +264,7 @@ func explode(pos: Vector2, radius: float, damage: float, burn: bool = false, bur
 	for e in enemies_in_range(pos, radius):
 		e.take_damage(damage, pos)
 	spawn_fx("ring", pos, radius, Color(0.4, 0.9, 1.0) if not burn else Color(1.0, 0.6, 0.2))
+	Sfx.play("explosion", -4.0)
 	add_shake(4.0)
 	if burn:
 		var fx: Node2D = FxScript.new()
@@ -283,10 +284,12 @@ func open_crate() -> void:
 	for w in player.weapons:
 		if w.can_evolve():
 			w.evolve()
+			Sfx.play("evolve")
 			hud.show_banner("WEAPON EVOLVED: %s" % w.display_name)
 			spawn_fx("ring", player.position, 90.0, Color(1, 0.85, 0.3))
 			return
 	scrap_earned += 50
+	Sfx.play("crate")
 	hud.show_banner("SUPPLY CRATE: +50 SCRAP")
 
 

@@ -68,6 +68,8 @@ func fire() -> bool:
 		p.burn = evolved
 		p.burn_dps = dmg(9.0) if evolved else 0.0
 		fired = true
+	if fired:
+		Sfx.play("mortar", -3.0)
 	return fired
 
 

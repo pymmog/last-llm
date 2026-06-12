@@ -64,6 +64,7 @@ func fire() -> bool:
 			spawn_projectile(player.position, dir * 720.0, shot_damage(), shot_pierce(), "spike", 7.0, 1.2)
 		else:
 			spawn_projectile(player.position, dir * 430.0, shot_damage(), shot_pierce(), "rivet", 5.0, 1.6)
+	Sfx.play("spike" if evolved else "rivet", -4.0)
 	return true
 
 
