@@ -32,7 +32,7 @@ window/stretch/mode="canvas_items"
 
 [gui]
 
-theme/custom_font="res://assets/fonts/mono_font.tres"
+theme/custom_font="res://assets/fonts/GeistPixel-Square.ttf"
 
 [input]
 
