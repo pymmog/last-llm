@@ -70,7 +70,7 @@ func _physics_process(delta: float) -> void:
 		return
 
 	if homing:
-		var target: Node2D = _nearest_unhit(400.0)
+		var target: Node2D = main.nearest_enemy(position, 400.0, _hit)
 		if target:
 			var desired := (target.position - position).normalized()
 			vel = vel.slerp(desired * vel.length(), clampf(turn_rate * delta, 0.0, 1.0))
@@ -94,19 +94,6 @@ func _physics_process(delta: float) -> void:
 
 func _detonate() -> void:
 	main.explode(target_point, explode_radius, damage, burn, burn_dps)
-
-
-func _nearest_unhit(max_range: float) -> Node2D:
-	var best: Node2D = null
-	var best_d := max_range * max_range
-	for e in main.enemies:
-		if not is_instance_valid(e) or e.dead or _hit.has(e.get_instance_id()):
-			continue
-		var d: float = position.distance_squared_to(e.position)
-		if d < best_d:
-			best_d = d
-			best = e
-	return best
 
 
 func modulate_color() -> Color:

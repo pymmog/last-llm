@@ -73,22 +73,8 @@ func _zap_chain(start: Node2D) -> void:
 		points.append(current.position)
 		visited[current.get_instance_id()] = true
 		current.take_damage(damage, player.position)
-		current = _next_link(current, visited)
+		current = main.nearest_enemy(current.position, chain_range(), visited)
 	main.spawn_fx("lightning", Vector2.ZERO, 0.0, Color(0.55, 0.85, 1.0), points)
-
-
-func _next_link(from: Node2D, visited: Dictionary) -> Node2D:
-	var best: Node2D = null
-	var r := chain_range()
-	var best_d := r * r
-	for e in main.enemies:
-		if not is_instance_valid(e) or e.dead or visited.has(e.get_instance_id()):
-			continue
-		var d: float = from.position.distance_squared_to(e.position)
-		if d < best_d:
-			best_d = d
-			best = e
-	return best
 
 
 func upgrade_desc() -> String:

@@ -116,8 +116,7 @@ func _physics_process(_delta: float) -> void:
 			while main.hud.levelup_panel.visible and drain < 32:
 				var pick: Button = main.hud.cards_box.get_child(0)
 				for c in main.hud.cards_box.get_children():
-					var title: Label = c.get_child(0).get_child(1)
-					if not title.text.begins_with("EVOLVE"):
+					if c.get_meta("card")["kind"] != "evolve":
 						pick = c
 						break
 				pick.pressed.emit()
@@ -132,8 +131,8 @@ func _physics_process(_delta: float) -> void:
 			check(found_crate, "alpha dropped supply crate")
 			check(main.hud.levelup_panel.visible, "crate opened the card picker")
 			check(main.hud.cards_box.get_child_count() == 6, "crate offers 6 cards")
-			var first_title: Label = main.hud.cards_box.get_child(0).get_child(0).get_child(1)
-			check(first_title.text.begins_with("EVOLVE"), "crate offer leads with ready evolution")
+			var first_card: Dictionary = main.hud.cards_box.get_child(0).get_meta("card")
+			check(first_card["kind"] == "evolve", "crate offer leads with ready evolution")
 		145:
 			(main.hud.cards_box.get_child(0) as Button).pressed.emit()
 		150:

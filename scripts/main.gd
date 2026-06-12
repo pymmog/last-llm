@@ -160,11 +160,13 @@ func _exit_tree() -> void:
 
 # ---------------------------------------------------------------- queries
 
-func nearest_enemy(from: Vector2, max_range: float) -> Node2D:
+func nearest_enemy(from: Vector2, max_range: float, exclude: Dictionary = {}) -> Node2D:
+	## `exclude`: enemy instance ids to skip (projectile pierce sets,
+	## tesla chain visited sets).
 	var best: Node2D = null
 	var best_d := max_range * max_range
 	for e in enemies:
-		if not is_instance_valid(e) or e.dead:
+		if not is_instance_valid(e) or e.dead or exclude.has(e.get_instance_id()):
 			continue
 		var d: float = from.distance_squared_to(e.position)
 		if d < best_d:

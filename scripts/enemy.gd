@@ -5,6 +5,7 @@ extends Node2D
 ## _run_brain() for behavior and _drop_loot() for death rewards.
 
 const EnemyProjectileScript := preload("res://scripts/enemy_projectile.gd")
+const DrawUtil := preload("res://scripts/draw_util.gd")
 const PS1_WALK_FRAMES := {
 	"shambler": [
 		preload("res://assets/sprites/shambler_walk_0.png"),
@@ -281,8 +282,8 @@ func _draw() -> void:
 	# Source sprites face left; flip when the player is to the right.
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f * s, s))
 	# Shadow
-	_ellipse(Vector2(0, 13), Vector2(maxf(radius * 0.9, 8.0), 3.8), Color(0, 0, 0, 0.34))
-	draw_ps1_sprite(frame, sprite_height, Vector2(0, 16.0 + sin(anim_t * 2.0) * 0.6), sprite_modulate)
+	DrawUtil.ellipse(self, Vector2(0, 13), Vector2(maxf(radius * 0.9, 8.0), 3.8), Color(0, 0, 0, 0.34), 12)
+	DrawUtil.ps1_sprite(self, frame, sprite_height, Vector2(0, 16.0 + sin(anim_t * 2.0) * 0.6), sprite_modulate)
 	if type == "brute" and (state == "telegraph" or state == "charge"):
 		draw_arc(Vector2.ZERO, 17.0, PI * 0.08, PI * 0.92, 18, Color(1.0, 0.75, 0.2, 0.55), 1.4)
 	if type == "sprinter" and (state == "aim" or state == "lunge"):
@@ -322,24 +323,6 @@ func _draw_alpha_mark(edge: Color, sprite_height: float) -> void:
 		]), gold, edge, 0.8)
 	draw_line(Vector2(-9, base_y - 1.0), Vector2(9, base_y - 1.0), edge, 1.5)
 	draw_line(Vector2(-8, base_y - 1.0), Vector2(8, base_y - 1.0), gold.darkened(0.05), 0.9)
-
-
-func draw_ps1_sprite(texture: Texture2D, target_height: float, foot: Vector2, modulate: Color) -> void:
-	var tex_size := texture.get_size()
-	var target_width := target_height * tex_size.x / tex_size.y
-	var rect := Rect2(
-		Vector2(-target_width * 0.5, foot.y - target_height),
-		Vector2(target_width, target_height)
-	)
-	draw_texture_rect(texture, rect, false, modulate)
-
-
-func _ellipse(center: Vector2, r: Vector2, col: Color) -> void:
-	var pts := PackedVector2Array()
-	for i in 12:
-		var a := TAU * i / 12.0
-		pts.append(center + Vector2(cos(a) * r.x, sin(a) * r.y))
-	draw_colored_polygon(pts, col)
 
 
 func _panel(pts: PackedVector2Array, fill: Color, edge: Color, width: float = 1.2) -> void:

@@ -3,6 +3,7 @@ extends Node2D
 ## read them when firing. Drawn as a generated PS1-style salvage robot sprite.
 
 const Upgrades := preload("res://scripts/upgrades.gd")
+const DrawUtil := preload("res://scripts/draw_util.gd")
 const PS1_TREAD_FRAMES := [
 	preload("res://assets/sprites/unit7_tread_0.png"),
 	preload("res://assets/sprites/unit7_tread_1.png"),
@@ -211,12 +212,12 @@ func _draw() -> void:
 	# Treads stay planted; vertical bob against a fixed shadow reads as hovering.
 	var foot := Vector2(0, 16)
 	# Shadow
-	draw_ellipse_approx(Vector2(0, 14), Vector2(16, 5.0), Color(0, 0, 0, 0.32))
-	draw_ellipse_approx(Vector2(1.5 * f, 11.5), Vector2(10, 3.0), Color(glow.r, glow.g, glow.b, 0.08))
+	DrawUtil.ellipse(self, Vector2(0, 14), Vector2(16, 5.0), Color(0, 0, 0, 0.32))
+	DrawUtil.ellipse(self, Vector2(1.5 * f, 11.5), Vector2(10, 3.0), Color(glow.r, glow.g, glow.b, 0.08))
 
 	# Source sprite faces left; flip when facing right.
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f, 1.0))
-	draw_ps1_sprite(frame, PS1_SPRITE_HEIGHT, foot, modulate)
+	DrawUtil.ps1_sprite(self, frame, PS1_SPRITE_HEIGHT, foot, modulate)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if shield_ready:
@@ -224,21 +225,3 @@ func _draw() -> void:
 		var sc := Color(0.35, 0.85, 1.0)
 		draw_arc(Vector2(0, -6), 24.0, 0.0, TAU, 32, Color(sc.r, sc.g, sc.b, pulse), 1.5)
 		draw_arc(Vector2(0, -6), 27.0, 0.0, TAU, 32, Color(sc.r, sc.g, sc.b, pulse * 0.3), 3.0)
-
-
-func draw_ellipse_approx(center: Vector2, r: Vector2, color: Color) -> void:
-	var pts := PackedVector2Array()
-	for i in 16:
-		var a := TAU * i / 16.0
-		pts.append(center + Vector2(cos(a) * r.x, sin(a) * r.y))
-	draw_colored_polygon(pts, color)
-
-
-func draw_ps1_sprite(texture: Texture2D, target_height: float, foot: Vector2, modulate: Color) -> void:
-	var tex_size := texture.get_size()
-	var target_width := target_height * tex_size.x / tex_size.y
-	var rect := Rect2(
-		Vector2(-target_width * 0.5, foot.y - target_height),
-		Vector2(target_width, target_height)
-	)
-	draw_texture_rect(texture, rect, false, modulate)
