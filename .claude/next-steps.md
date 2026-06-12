@@ -45,27 +45,23 @@ as items land.
 
 ## P3 — Platform & distribution
 
-10. **CI.** GitHub Actions workflow: cache the Godot binary + templates, run
-    `--import` and the smoke test on every push, produce Linux/macOS export
-    artifacts on tags. The exact commands are in README and `.claude/plan.md`.
-11. **Windows preset** (`export_presets.cfg` preset.2) — trivial since the
-    project is pure GDScript; verify via cross-export like macOS was.
-12. **Packaging:** itch.io butler push for all three OSes; optionally a
-    Flatpak manifest for Linux. macOS notarization if distributing outside
-    itch.
-13. **Gamepad menu navigation** (UI focus neighbors + accept/cancel actions)
+10. **Packaging/distribution:** itch.io butler push for all three OSes
+    (CI artifacts exist; wire butler into the workflow on tags); optionally a
+    Flatpak manifest for Linux. macOS notarization and Windows signing if
+    distributing outside itch.
+11. **Gamepad menu navigation** (UI focus neighbors + accept/cancel actions)
     and key rebinding screen.
 
 ## P4 — Tech debt / performance (only when needed)
 
-14. **Spatial hash grid** for `enemies_in_range`/projectile collision if
+12. **Spatial hash grid** for `enemies_in_range`/projectile collision if
     late-game frame times degrade (current manual O(n·m) scan is fine at the
     240-enemy cap with typical projectile counts).
-15. **Object pooling** for projectiles, damage numbers, and FX nodes.
-16. **Refactor `enemy.gd`** if the roster grows past ~7 types — split
+13. **Object pooling** for projectiles, damage numbers, and FX nodes.
+14. **Refactor `enemy.gd`** if the roster grows past ~7 types — split
     behaviors ("brains") into small strategy objects instead of the `match`
     blocks.
-17. **Migrate magic numbers to a balance resource** (one `balance.gd` const
+15. **Migrate magic numbers to a balance resource** (one `balance.gd` const
     table or custom Resource) so tuning passes don't touch five files.
 
 ## Done
@@ -75,3 +71,6 @@ as items land.
 - ✅ Linux export preset + verified native build; headless smoke test (2026-06)
 - ✅ macOS export preset, verified via Linux cross-export; macOS player
   instructions in README (2026-06)
+- ✅ Windows export preset (unsigned, rcedit-free) verified via cross-export;
+  GitHub Actions CI: smoke test gate + Linux AppImage / macOS .app / Windows
+  .exe artifacts on every master push and PR (2026-06)

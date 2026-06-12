@@ -1,7 +1,7 @@
 # RUSTPULSE
 
 A post-apocalyptic, Vampire Survivors-inspired 2D survivor-like built with
-**Godot 4.4** for **Linux desktop**. You are UNIT-7, a lone maintenance robot
+**Godot 4.6** for **Linux desktop**. You are UNIT-7, a lone maintenance robot
 holding out against endless waves of color-coded human-like mutants. Move to
 survive — your weapons fire on their own. Survive 20 minutes to win; scrap
 earned in every run buys permanent Workshop upgrades.
@@ -25,7 +25,7 @@ Full design spec: [docs/DESIGN.md](docs/DESIGN.md)
 
 ## Running from source
 
-Requires [Godot 4.4.x](https://godotengine.org/download/linux/) (standard
+Requires [Godot 4.6.x](https://godotengine.org/download/linux/) (standard
 build, no Mono needed).
 
 ```sh
@@ -44,11 +44,13 @@ Export templates must match your editor version. Either:
 - **Editor:** *Editor → Manage Export Templates → Download and Install*, or
 - **CLI:**
   ```sh
-  curl -LO https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-  godot --headless --install-export-templates Godot_v4.4.1-stable_export_templates.tpz
+  curl -LO https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz
+  unzip Godot_v4.6-stable_export_templates.tpz   # contains a templates/ dir
+  mkdir -p ~/.local/share/godot/export_templates
+  mv templates ~/.local/share/godot/export_templates/4.6.stable
   ```
-  (Manual alternative: unzip the `.tpz` and place `linux_release.x86_64` /
-  `linux_debug.x86_64` in `~/.local/share/godot/export_templates/4.4.1.stable/`.)
+  (Only `linux_release.x86_64`, `macos.zip` and `windows_release_x86_64.exe`
+  are needed for the presets in this repo.)
 
 ### Export a release build
 
@@ -81,7 +83,7 @@ macOS as-is. Two options:
 
 ### Option 1 — run from source (easiest)
 
-1. Install Godot 4.4.x:
+1. Install Godot 4.6.x:
    ```sh
    brew install --cask godot
    ```
@@ -100,11 +102,9 @@ A ready-made **macOS** preset is committed in `export_presets.cfg`
 (universal Intel + Apple Silicon binary, ad-hoc signed, `.zip` output).
 
 1. One-time: install the matching export templates — *Editor → Manage Export
-   Templates → Download and Install*, or:
-   ```sh
-   curl -LO https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_export_templates.tpz
-   godot --headless --install-export-templates Godot_v4.4.1-stable_export_templates.tpz
-   ```
+   Templates → Download and Install*, or the manual CLI install shown in the
+   Linux section above (the path is
+   `~/Library/Application Support/Godot/export_templates/4.6.stable` on macOS).
 2. Export — *Project → Export → macOS → Export Project*, or:
    ```sh
    godot --headless --export-release "macOS" build/macos/rustpulse.zip
@@ -123,6 +123,39 @@ xattr -cr RUSTPULSE.app
 This preset also cross-exports from a Linux host (that's how it was verified
 here). For public distribution you'd want Developer ID signing + notarization —
 see `codesign/*` and `notarization/*` in the preset.
+
+## Windows
+
+A `Windows Desktop` preset is committed as well (x86_64, embedded PCK,
+unsigned). Export it the same way:
+
+```sh
+godot --headless --export-release "Windows Desktop" build/windows/rustpulse.exe
+```
+
+SmartScreen will warn on first run of the unsigned exe — *More info → Run
+anyway*.
+
+## CI builds (download & play without installing Godot)
+
+Every push to `master` (and every PR) runs the
+[`build` workflow](.github/workflows/build.yml): it executes the headless
+smoke test, then exports all three platforms and uploads them as artifacts:
+
+| Artifact | Contents |
+|----------|----------|
+| `rustpulse-linux-appimage` | `RUSTPULSE-x86_64.AppImage` |
+| `rustpulse-macos` | `rustpulse-macos.zip` → `RUSTPULSE.app` (universal, ad-hoc signed) |
+| `rustpulse-windows` | `rustpulse.exe` |
+
+Grab them from the **Actions** tab → select a run → *Artifacts*. Notes:
+
+- GitHub artifact downloads are zips that **strip the executable bit** — on
+  Linux run `chmod +x RUSTPULSE-x86_64.AppImage` (or `chmod +x` the raw
+  binary) after unzipping.
+- macOS: unzip the artifact, then unzip the inner `rustpulse-macos.zip` (the
+  inner zip preserves the app bundle's permissions), then see the Gatekeeper
+  notes above.
 
 ## Headless validation / smoke test
 
@@ -145,7 +178,8 @@ Permanent progress lives at `user://meta.json`, i.e.
 ```
 docs/DESIGN.md            game design spec
 project.godot             project config (inputs, autoloads, GL compatibility)
-export_presets.cfg        Linux x86_64 + macOS export presets
+export_presets.cfg        Linux x86_64 + macOS + Windows export presets
+.github/workflows/        CI: smoke test + AppImage/macOS/Windows artifacts
 scenes/                   thin scene roots (children are built in code)
 scripts/main.gd           run orchestrator: state, queries, spawning services
 scripts/player.gd         movement, stats, XP, procedural robot art

@@ -103,7 +103,7 @@ func nearest_enemy(from: Vector2, max_range: float) -> Node2D:
 	var best: Node2D = null
 	var best_d := max_range * max_range
 	for e in enemies:
-		if e.dead:
+		if not is_instance_valid(e) or e.dead:
 			continue
 		var d: float = from.distance_squared_to(e.position)
 		if d < best_d:
@@ -116,7 +116,7 @@ func enemies_in_range(from: Vector2, radius: float) -> Array:
 	var out: Array = []
 	var r2 := radius * radius
 	for e in enemies:
-		if not e.dead and from.distance_squared_to(e.position) < r2:
+		if is_instance_valid(e) and not e.dead and from.distance_squared_to(e.position) < r2:
 			out.append(e)
 	return out
 

@@ -92,7 +92,7 @@ func recycle_stragglers() -> void:
 	## keeping pressure on without unbounded wandering.
 	var p: Vector2 = main.player.position
 	for e in main.enemies:
-		if e.dead or e.is_alpha:
+		if not is_instance_valid(e) or e.dead or e.is_alpha:
 			continue
 		if e.position.distance_squared_to(p) > 950.0 * 950.0:
 			e.position = ring_position()

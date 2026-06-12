@@ -7,7 +7,7 @@ prioritized improvement roadmap is in `.claude/next-steps.md`.
 
 ## What this is
 
-A complete, working Vampire Survivors-style 2D survivor-like in **Godot 4.4**
+A complete, working Vampire Survivors-style 2D survivor-like in **Godot 4.6**
 (GDScript only, GL Compatibility renderer). Linux is the primary target with a
 verified headless export pipeline; a macOS preset is also committed and was
 verified by cross-exporting from Linux.

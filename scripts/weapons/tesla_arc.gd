@@ -80,7 +80,7 @@ func _next_link(from: Node2D, visited: Dictionary) -> Node2D:
 	var r := chain_range()
 	var best_d := r * r
 	for e in main.enemies:
-		if e.dead or visited.has(e.get_instance_id()):
+		if not is_instance_valid(e) or e.dead or visited.has(e.get_instance_id()):
 			continue
 		var d: float = from.position.distance_squared_to(e.position)
 		if d < best_d:
