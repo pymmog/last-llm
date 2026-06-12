@@ -82,9 +82,11 @@ func _build_fps_overlay() -> void:
 	layer.layer = 100
 	add_child(layer)
 	_fps_label = Label.new()
-	_fps_label.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_fps_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
 	_fps_label.offset_left = -150
-	_fps_label.offset_top = 18
+	_fps_label.offset_top = -30
+	_fps_label.offset_right = -6
+	_fps_label.offset_bottom = -10
 	_fps_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_fps_label.add_theme_font_size_override("font_size", 13)
 	_fps_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6))

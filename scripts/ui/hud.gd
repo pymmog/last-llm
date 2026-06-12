@@ -32,6 +32,10 @@ var settings_panel: Control
 var settings_controls: Control
 var resume_btn: Button
 var end_panel: Control
+var debug_panel: Control
+var debug_stats: Label
+var god_check: CheckButton
+var god_label: Label
 
 
 func _ready() -> void:
@@ -40,6 +44,8 @@ func _ready() -> void:
 	_build_bars()
 	_build_levelup()
 	_build_pause()
+	if OS.is_debug_build():
+		_build_debug()
 
 
 func _build_bars() -> void:
@@ -75,6 +81,9 @@ func _build_bars() -> void:
 	hp_fill = _bar_fill(Color(0.85, 0.3, 0.25))
 	hp_bg.add_child(hp_fill)
 	hp_label = _label(root, Vector2(22, 33), 12, Color(1, 1, 1))
+	god_label = _label(root, Vector2(244, 35), 12, Color(1.0, 0.85, 0.3))
+	god_label.text = "GOD"
+	god_label.visible = false
 
 	timer_label = _label(root, Vector2(600, 22), 26, Color(0.95, 0.92, 0.85))
 	timer_label.text = "00:00"
@@ -143,6 +152,9 @@ func _process(delta: float) -> void:
 	level_label.position.x = get_viewport().get_visible_rect().size.x - 80.0
 	kills_label.text = "KILLS %d" % main.kills
 	scrap_label.text = "SCRAP %d (+%d)" % [Meta.scrap, main.scrap_earned]
+	god_label.visible = p.god_mode
+	if debug_panel and debug_panel.visible:
+		_update_debug_stats()
 	if banner_t > 0.0:
 		banner_t -= delta
 		banner.modulate.a = clampf(banner_t / 0.5, 0.0, 1.0)
@@ -154,14 +166,31 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if main.run_over or levelup_panel.visible:
 		return
+	if debug_panel and _is_debug_key(event) \
+			and not (pause_panel.visible or settings_panel.visible):
+		_toggle_debug()
+		get_viewport().set_input_as_handled()
+		return
 	# Esc maps to both actions; gamepad B (ui_cancel) only backs out of menus.
 	var cancel := event.is_action_pressed("ui_cancel") \
-		and (pause_panel.visible or settings_panel.visible)
+		and (pause_panel.visible or settings_panel.visible
+			or (debug_panel != null and debug_panel.visible))
 	if event.is_action_pressed("pause") or cancel:
-		if settings_panel.visible:
+		if debug_panel and debug_panel.visible:
+			_toggle_debug()
+		elif settings_panel.visible:
 			_close_settings()
 		else:
 			_toggle_pause()
+
+
+func _is_debug_key(event: InputEvent) -> bool:
+	var k := event as InputEventKey
+	if k == null or not k.pressed or k.echo:
+		return false
+	# "?" arrives as its own keycode on some layouts, Shift+/ on others.
+	return k.keycode == KEY_QUESTION \
+		or (k.keycode == KEY_SLASH and k.shift_pressed)
 
 
 func show_banner(text: String) -> void:
@@ -325,6 +354,8 @@ func show_end_screen(victory: bool) -> void:
 	levelup_panel.visible = false
 	pause_panel.visible = false
 	settings_panel.visible = false
+	if debug_panel:
+		debug_panel.visible = false
 	end_panel = _overlay()
 	var box := _center_panel(end_panel)
 	var title := Label.new()
@@ -358,6 +389,112 @@ func show_end_screen(victory: bool) -> void:
 func _on_end_continue() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+
+# ---------------------------------------------------------------- dev debug
+
+func _build_debug() -> void:
+	## Debug-build-only cheat menu, toggled with "?". Pauses the run while open.
+	debug_panel = _overlay()
+	var box := _center_panel(debug_panel)
+	var title := Label.new()
+	title.text = "DEV DEBUG"
+	title.add_theme_font_size_override("font_size", 26)
+	title.add_theme_color_override("font_color", Color(1.0, 0.5, 0.9))
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+	var columns := HBoxContainer.new()
+	columns.add_theme_constant_override("separation", 28)
+	box.add_child(columns)
+	var actions := VBoxContainer.new()
+	actions.add_theme_constant_override("separation", 8)
+	columns.add_child(actions)
+	god_check = CheckButton.new()
+	god_check.text = "God Mode"
+	god_check.toggled.connect(func(on: bool) -> void:
+		main.player.god_mode = on)
+	actions.add_child(god_check)
+	_debug_btn(actions, "+1 Level", _debug_level_up.bind(1))
+	_debug_btn(actions, "+5 Levels", _debug_level_up.bind(5))
+	_debug_btn(actions, "Full Heal", func() -> void:
+		main.player.hp = main.player.max_hp)
+	_debug_btn(actions, "+1000 Scrap", func() -> void:
+		main.scrap_earned += 1000)
+	_debug_btn(actions, "Kill All Enemies", _debug_kill_all)
+	_debug_btn(actions, "Skip +1 Minute", func() -> void:
+		main.run_time += 60.0)
+	_debug_btn(actions, "Crate Reward / Evolve", func() -> void:
+		main.open_crate())
+	_debug_btn(actions, "Close", _toggle_debug)
+	debug_stats = Label.new()
+	debug_stats.custom_minimum_size = Vector2(340, 0)
+	debug_stats.add_theme_font_size_override("font_size", 13)
+	debug_stats.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	columns.add_child(debug_stats)
+
+
+func _debug_btn(parent: Control, text: String, action: Callable) -> void:
+	var b := Button.new()
+	b.text = text
+	b.custom_minimum_size = Vector2(220, 34)
+	b.pressed.connect(action)
+	parent.add_child(b)
+
+
+func _toggle_debug() -> void:
+	var now := not debug_panel.visible
+	debug_panel.visible = now
+	get_tree().paused = now
+	if now:
+		god_check.set_pressed_no_signal(main.player.god_mode)
+		_update_debug_stats()
+		god_check.grab_focus.call_deferred()
+
+
+func _debug_level_up(count: int) -> void:
+	# Hide the menu first: add_xp opens the level-up card picker, which
+	# takes over the pause state and focus.
+	debug_panel.visible = false
+	var p: Node2D = main.player
+	for i in count:
+		p.add_xp(p.xp_needed - p.xp + 0.001)
+
+
+func _debug_kill_all() -> void:
+	for e in main.enemies.duplicate():
+		if is_instance_valid(e) and not e.dead:
+			e.take_damage(1e9, main.player.position)
+
+
+func _update_debug_stats() -> void:
+	var p: Node2D = main.player
+	var weapons := ""
+	for w in p.weapons:
+		weapons += "\n  %s  LV %d%s" % [
+			w.display_name, w.level, "  (evolved)" if w.evolved else ""]
+	var passives := ""
+	for id in p.passives:
+		passives += "\n  %s  LV %d" % [id, p.passives[id]]
+	var t := int(main.run_time)
+	debug_stats.text = "\n".join([
+		"LV %d   XP %.1f / %.1f" % [p.level, p.xp, p.xp_needed],
+		"HP %.1f / %.1f   regen %.1f/s   armor %.1f" % [p.hp, p.max_hp, p.regen, p.armor],
+		"Move speed %.0f   Pickup radius %.0f" % [p.move_speed, p.pickup_radius],
+		"Damage x%.2f   Attack speed +%d%%   CDR %d%%" % [
+			p.damage_mult, roundi(p.attack_speed * 100), roundi(p.cooldown_red * 100)],
+		"Area x%.2f   Projectiles +%d   Pierce +%d" % [
+			p.area_mult, p.extra_projectiles, p.extra_pierce],
+		"",
+		"Run %02d:%02d   Kills %d   Scrap +%d" % [t / 60, t % 60, main.kills, main.scrap_earned],
+		"Enemies %d   Gems %d   FX %d   FPS %d" % [
+			main.enemies.size(),
+			get_tree().get_nodes_in_group("xp_gems").size(),
+			main.fx_node.get_child_count(),
+			Engine.get_frames_per_second()],
+		"",
+		"Weapons:" + (weapons if weapons != "" else "  none"),
+		"Passives:" + (passives if passives != "" else "  none"),
+	])
 
 
 # ---------------------------------------------------------------- helpers

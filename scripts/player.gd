@@ -38,6 +38,7 @@ var xp_needed := 10.0
 var pending_levels := 0
 
 var radius := 12.0
+var god_mode := false  # dev debug: ignore all incoming damage
 var invuln := 0.0
 var facing := 1.0
 var anim_t := 0.0
@@ -146,7 +147,7 @@ func add_xp(value: float) -> void:
 
 
 func take_damage(amount: float, from: Vector2 = Vector2.INF) -> void:
-	if invuln > 0.0 or main.run_over:
+	if invuln > 0.0 or main.run_over or god_mode:
 		return
 	var dealt := maxf(amount - armor, 1.0)
 	hp -= dealt
