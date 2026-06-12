@@ -11,7 +11,7 @@ func _ready() -> void:
 	theme = UiTheme.make()
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var bg := ColorRect.new()
-	bg.color = Color(0.10, 0.085, 0.07)
+	bg.color = Color(0.075, 0.064, 0.052)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
@@ -25,13 +25,13 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "WORKSHOP — PERMANENT UPGRADES"
 	title.add_theme_font_size_override("font_size", 32)
-	title.add_theme_color_override("font_color", Color(0.9, 0.55, 0.2))
+	title.add_theme_color_override("font_color", Color(1.0, 0.58, 0.18))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
 	scrap_label = Label.new()
 	scrap_label.add_theme_font_size_override("font_size", 18)
-	scrap_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.82))
+	scrap_label.add_theme_color_override("font_color", Color(0.92, 0.88, 0.78))
 	scrap_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(scrap_label)
 
@@ -72,13 +72,13 @@ func _build_row(id: String) -> Control:
 	desc.text = d["desc"]
 	desc.custom_minimum_size = Vector2(190, 0)
 	desc.add_theme_font_size_override("font_size", 13)
-	desc.add_theme_color_override("font_color", Color(0.65, 0.65, 0.62))
+	desc.add_theme_color_override("font_color", Color(0.68, 0.66, 0.6))
 	row.add_child(desc)
 
 	var pips := Label.new()
 	pips.custom_minimum_size = Vector2(90, 0)
 	pips.add_theme_font_size_override("font_size", 15)
-	pips.add_theme_color_override("font_color", Color(0.4, 0.95, 0.85))
+	pips.add_theme_color_override("font_color", Color(0.54, 1.0, 0.94))
 	row.add_child(pips)
 
 	var btn := Button.new()

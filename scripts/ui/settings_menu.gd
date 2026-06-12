@@ -12,7 +12,7 @@ func _ready() -> void:
 	theme = UiTheme.make()
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var bg := ColorRect.new()
-	bg.color = Color(0.10, 0.085, 0.07)
+	bg.color = Color(0.075, 0.064, 0.052)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
@@ -32,7 +32,7 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "SETTINGS"
 	title.add_theme_font_size_override("font_size", 32)
-	title.add_theme_color_override("font_color", Color(0.9, 0.55, 0.2))
+	title.add_theme_color_override("font_color", Color(1.0, 0.58, 0.18))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 

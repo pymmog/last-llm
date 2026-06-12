@@ -8,7 +8,7 @@ func _ready() -> void:
 	theme = UiTheme.make()
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	var bg := ColorRect.new()
-	bg.color = Color(0.10, 0.085, 0.07)
+	bg.color = Color(0.075, 0.064, 0.052)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
 
@@ -23,14 +23,14 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "RUSTPULSE"
 	title.add_theme_font_size_override("font_size", 64)
-	title.add_theme_color_override("font_color", Color(0.9, 0.55, 0.2))
+	title.add_theme_color_override("font_color", Color(1.0, 0.58, 0.18))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
 
 	var sub := Label.new()
 	sub.text = "One robot. Endless mutants. Survive 20 minutes."
 	sub.add_theme_font_size_override("font_size", 16)
-	sub.add_theme_color_override("font_color", Color(0.7, 0.68, 0.62))
+	sub.add_theme_color_override("font_color", Color(0.56, 0.9, 0.85))
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(sub)
 
@@ -48,14 +48,14 @@ func _ready() -> void:
 	stats.text = "Scrap: %d    Best time: %02d:%02d    Total kills: %d    Victories: %d" % [
 		Meta.scrap, bt / 60, bt % 60, Meta.total_kills, Meta.victories]
 	stats.add_theme_font_size_override("font_size", 14)
-	stats.add_theme_color_override("font_color", Color(0.6, 0.6, 0.58))
+	stats.add_theme_color_override("font_color", Color(0.72, 0.68, 0.6))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(stats)
 
 	var hint := Label.new()
 	hint.text = "Move: WASD / arrows / left stick — weapons fire on their own"
 	hint.add_theme_font_size_override("font_size", 13)
-	hint.add_theme_color_override("font_color", Color(0.45, 0.45, 0.43))
+	hint.add_theme_color_override("font_color", Color(0.48, 0.55, 0.52))
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(hint)
 
