@@ -12,15 +12,21 @@ const BOSS_TIMES := [180.0, 420.0, 660.0, 900.0, 1140.0]
 const BOSS_TYPES := ["shambler", "sprinter", "spitter", "brute", "brute"]
 
 var main: Node2D
-var spawn_timer := 1.0
+var spawn_timer := 0.5
 var recycle_timer := 1.0
 var boss_index := 0
+var opening_done := false
 
 
 func _physics_process(delta: float) -> void:
 	if main.run_over:
 		return
 	var t: float = main.run_time
+	if not opening_done:
+		# Opening wave: immediate pressure instead of waiting for the timer.
+		opening_done = true
+		for i in 5:
+			spawn("shambler", false)
 	spawn_timer -= delta
 	if spawn_timer <= 0.0:
 		spawn_timer = spawn_interval(t)
@@ -83,14 +89,22 @@ func spawn(etype: String, alpha: bool) -> void:
 
 func spawn_min_dist() -> float:
 	## Half the camera view's diagonal plus a margin: the closest distance
-	## from the player that is guaranteed to be off-screen.
+	## from the player that is guaranteed to be off-screen in any direction.
+	## Used as the recycle threshold, not for spawning.
 	var view: Vector2 = get_viewport().get_visible_rect().size / main.player.camera.zoom
 	return view.length() * 0.5 + SPAWN_MARGIN
 
 
+func edge_dist(a: float) -> float:
+	## Distance from the player to the view-rect edge along direction a,
+	## so spawns hug the screen instead of sitting on the far diagonal ring.
+	var half: Vector2 = get_viewport().get_visible_rect().size / main.player.camera.zoom * 0.5
+	return minf(half.x / maxf(absf(cos(a)), 0.001), half.y / maxf(absf(sin(a)), 0.001))
+
+
 func ring_position() -> Vector2:
 	var a := randf() * TAU
-	var min_d := spawn_min_dist()
+	var min_d := edge_dist(a) + SPAWN_MARGIN
 	var d := randf_range(min_d, min_d + SPAWN_BAND)
 	return main.player.position + Vector2(cos(a), sin(a)) * d
 
