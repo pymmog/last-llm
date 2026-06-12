@@ -11,6 +11,7 @@ const Upgrades := preload("res://scripts/upgrades.gd")
 var main: Node2D
 var frame := 0
 var failures := 0
+var cards_clicked := 0
 
 
 func _ready() -> void:
@@ -33,7 +34,13 @@ func _physics_process(_delta: float) -> void:
 	# Click through level-up cards until all pending levels are resolved.
 	if frame > 165 and frame < 300 and main.hud.levelup_panel.visible:
 		var card: Button = main.hud.cards_box.get_child(0)
+		if cards_clicked == 1:
+			# Regression: stale queued-free cards used to steal the focus seed
+			# on every re-shown panel, breaking keyboard/gamepad selection.
+			check(get_viewport().gui_get_focus_owner() == card,
+				"re-shown level-up card regains keyboard focus")
 		card.pressed.emit()
+		cards_clicked += 1
 	match frame:
 		5:
 			check(AudioServer.get_bus_index("Music") >= 0, "music bus created")
@@ -57,7 +64,7 @@ func _physics_process(_delta: float) -> void:
 			# Settings screen builds without errors.
 			var sm: Control = load("res://scenes/settings_menu.tscn").instantiate()
 			add_child(sm)
-			check(sm.panel.grid.get_child_count() == 12, "settings menu built (6 rows)")
+			check(sm.panel.grid.get_child_count() == 14, "settings menu built (7 rows)")
 			sm.queue_free()
 			# In-run settings reachable from the pause menu.
 			main.hud._open_settings()

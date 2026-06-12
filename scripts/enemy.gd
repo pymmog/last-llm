@@ -233,7 +233,11 @@ func die() -> void:
 			main.spawn_pickup("medkit", position)
 		if randf() < 0.002:
 			main.spawn_pickup("magnet", position)
-	queue_free()
+	flash = 0.0
+	queue_redraw()
+	var tw := create_tween()
+	tw.tween_property(self, "modulate:a", 0.0, 0.35)
+	tw.tween_callback(queue_free)
 
 
 # ---------------------------------------------------------------- drawing

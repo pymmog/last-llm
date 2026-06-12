@@ -91,8 +91,8 @@ miniboss **supply crate** (or as a level-up card).
 
 - Characters use generated PS1-style animated sprites with nearest-neighbor
   filtering, strong silhouettes, crunchy texture detail, and color-coded enemy
-  reads. Backgrounds, pickups, weapons, and effects remain procedural `_draw()`
-  art on a dark wasteland palette.
+  reads. Backgrounds, props, pickups, weapons, effects, and UI use the same
+  generated crunchy wasteland/industrial sprite language.
 - Game feel: hit flashes, floating damage numbers, screen shake on big hits,
   enemy death "pop", XP vacuum effect.
 - Resolution 1280×720, `canvas_items` stretch, integer-friendly UI.

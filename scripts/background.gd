@@ -4,14 +4,20 @@ extends Node2D
 ## PS1 sprite set (tools/generate_ps1_sprites.gd); cracks and dirt stay vector.
 
 const CELL := 120.0
+const GROUND_TILE := 144.0
 const SPRITE_SCALE := 3  # generated PNGs are saved at 3x their logical size
 
+const GROUND_TEX := preload("res://assets/sprites/env_ground_tile.png")
 const PROPS := {
 	"rock_a": preload("res://assets/sprites/prop_rock_a.png"),
 	"rock_b": preload("res://assets/sprites/prop_rock_b.png"),
 	"bones": preload("res://assets/sprites/prop_bones.png"),
 	"shrub": preload("res://assets/sprites/prop_shrub.png"),
 	"plate": preload("res://assets/sprites/prop_plate.png"),
+	"scrap_pile": preload("res://assets/sprites/prop_scrap_pile.png"),
+	"cable_coil": preload("res://assets/sprites/prop_cable_coil.png"),
+	"barrel": preload("res://assets/sprites/prop_barrel.png"),
+	"ruined_console": preload("res://assets/sprites/prop_ruined_console.png"),
 }
 
 var _last_cam := Vector2(99999, 99999)
@@ -36,8 +42,7 @@ func _draw() -> void:
 		return
 	var center := cam.get_screen_center_position()
 	var half := get_viewport_rect().size * 0.5 + Vector2(CELL, CELL)
-	# Base ground.
-	draw_rect(Rect2(center - half, half * 2.0), Color(0.16, 0.14, 0.11))
+	_draw_ground(center, half)
 	var x0 := int(floorf((center.x - half.x) / CELL))
 	var x1 := int(ceilf((center.x + half.x) / CELL))
 	var y0 := int(floorf((center.y - half.y) / CELL))
@@ -47,16 +52,32 @@ func _draw() -> void:
 			_draw_cell(cx, cy)
 
 
+func _draw_ground(center: Vector2, half: Vector2) -> void:
+	draw_rect(Rect2(center - half, half * 2.0), Color(0.13, 0.11, 0.085))
+	var tx0 := int(floorf((center.x - half.x) / GROUND_TILE))
+	var tx1 := int(ceilf((center.x + half.x) / GROUND_TILE))
+	var ty0 := int(floorf((center.y - half.y) / GROUND_TILE))
+	var ty1 := int(ceilf((center.y + half.y) / GROUND_TILE))
+	for ty in range(ty0, ty1):
+		for tx in range(tx0, tx1):
+			draw_texture_rect(
+				GROUND_TEX,
+				Rect2(Vector2(tx, ty) * GROUND_TILE, Vector2(GROUND_TILE, GROUND_TILE)),
+				false,
+				Color(0.82, 0.8, 0.76, 0.82)
+			)
+
+
 func _draw_cell(cx: int, cy: int) -> void:
 	var h := _hash(cx, cy)
 	var base := Vector2(cx * CELL, cy * CELL)
 	var ox := float((h >> 4) & 63) / 63.0 * CELL
 	var oy := float((h >> 10) & 63) / 63.0 * CELL
 	var p := base + Vector2(ox, oy)
-	match h % 11:
+	match h % 17:
 		0, 1:
 			# Dirt patch.
-			draw_circle(p, 18.0 + float(h % 17), Color(0.13, 0.115, 0.09))
+			draw_circle(p, 18.0 + float(h % 17), Color(0.09, 0.078, 0.06, 0.78))
 		2, 3:
 			# Crack in the earth.
 			var a := float(h % 7) * 0.9
@@ -64,7 +85,7 @@ func _draw_cell(cx: int, cy: int) -> void:
 			var q := p
 			for i in 4:
 				var nq: Vector2 = q + dir.rotated(float((h >> i) % 5 - 2) * 0.3) * 18.0
-				draw_line(q, nq, Color(0.09, 0.08, 0.06), 2.0)
+				draw_line(q, nq, Color(0.055, 0.048, 0.038), 2.0)
 				q = nq
 		4:
 			# Rock.
@@ -78,10 +99,26 @@ func _draw_cell(cx: int, cy: int) -> void:
 		7:
 			# Scrap plate.
 			_draw_prop("plate", p, h)
+		8:
+			# Salvage pile with muted orange/cyan accents.
+			_draw_prop("scrap_pile", p, h)
+		9:
+			# Old power cable.
+			_draw_prop("cable_coil", p, h)
+		10:
+			# Rusted drum.
+			_draw_prop("barrel", p, h)
+		11:
+			# Broken console remnant.
+			_draw_prop("ruined_console", p, h)
+		12:
+			# Oil stain and a tiny dead indicator light.
+			draw_circle(p, 13.0 + float(h % 9), Color(0.03, 0.028, 0.025, 0.55))
+			draw_circle(p + Vector2(7, -3), 1.4, Color(0.0, 0.45, 0.42, 0.42))
 		_:
 			# Pebbles.
-			draw_circle(p, 2.2, Color(0.2, 0.18, 0.15))
-			draw_circle(p + Vector2(7, 4), 1.6, Color(0.2, 0.18, 0.15))
+			draw_circle(p, 2.2, Color(0.16, 0.145, 0.12))
+			draw_circle(p + Vector2(7, 4), 1.6, Color(0.18, 0.16, 0.13))
 
 
 func _draw_prop(name: String, p: Vector2, h: int) -> void:

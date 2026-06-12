@@ -133,6 +133,8 @@ func _separate_enemies() -> void:
 
 
 func add_shake(amount: float) -> void:
+	if not Settings.screen_shake:
+		return
 	shake_amount = minf(shake_amount + amount, 14.0)
 
 

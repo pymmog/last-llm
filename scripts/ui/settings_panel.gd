@@ -53,6 +53,29 @@ func _ready() -> void:
 		Settings.save_data())
 	_add_row("FPS overlay", fps)
 
+	var shake := CheckButton.new()
+	shake.button_pressed = Settings.screen_shake
+	shake.toggled.connect(func(on: bool) -> void:
+		Settings.screen_shake = on
+		Settings.save_data())
+	_add_row("Screen shake", shake)
+
+	# Wiping meta progression is destructive, so arm on first press and only
+	# reset on a second press while armed; losing focus disarms.
+	var reset := Button.new()
+	reset.text = "RESET SAVE"
+	reset.custom_minimum_size = Vector2(220, 44)
+	reset.pressed.connect(func() -> void:
+		if reset.text == "ARE YOU SURE?":
+			Meta.reset()
+			reset.text = "SAVE WIPED"
+		elif reset.text == "RESET SAVE":
+			reset.text = "ARE YOU SURE?")
+	reset.focus_exited.connect(func() -> void:
+		if reset.text == "ARE YOU SURE?":
+			reset.text = "RESET SAVE")
+	add_child(reset)
+
 	var back := Button.new()
 	back.text = "BACK"
 	back.custom_minimum_size = Vector2(220, 44)

@@ -25,6 +25,11 @@ func _init() -> void:
 	_save(_crate(), "pickup_crate", 3)
 	_save(_gem(), "xp_gem", 3)
 	_save(_scorch(), "fx_scorch", 3)
+	_save(_ground_tile(), "env_ground_tile", 3)
+	_save(_scrap_pile(), "prop_scrap_pile", 3)
+	_save(_cable_coil(), "prop_cable_coil", 3)
+	_save(_barrel(), "prop_barrel", 3)
+	_save(_ruined_console(), "prop_ruined_console", 3)
 	_save(_ui_panel(), "ui_panel", 3)
 	_save(_ui_button("normal"), "ui_button", 3)
 	_save(_ui_button("hover"), "ui_button_hover", 3)
@@ -127,6 +132,33 @@ func _speckle(img: Image, c: Color, count: int) -> void:
 
 # ---------------------------------------------------------------- props
 
+func _ground_tile() -> Image:
+	var img := _img(48, 48)
+	_rect(img, 0, 0, 48, 48, Color8(42, 36, 29))
+	for y in 48:
+		for x in 48:
+			var n := absi((x * 734287 + y * 912931 + (x ^ y) * 19349663) ^ 0x57A57)
+			var c := img.get_pixel(x, y)
+			if n % 11 == 0:
+				c = c.lightened(0.035)
+			elif n % 7 == 0:
+				c = c.darkened(0.045)
+			img.set_pixel(x, y, c)
+	# Material texture only. Larger cracks, oil, and debris are drawn per cell
+	# in background.gd so this tile can repeat without obvious landmarks.
+	for i in 9:
+		var p2 := Vector2i(rng.randi_range(3, 44), rng.randi_range(3, 44))
+		_px(img, p2.x, p2.y, Color8(62, 54, 45))
+		if rng.randf() < 0.4:
+			_px(img, p2.x + 1, p2.y, Color8(34, 30, 25))
+	_px(img, 39, 20, Color8(25, 67, 66))
+	_px(img, 40, 20, Color8(18, 48, 48))
+	for i in 26:
+		var p := Vector2i(rng.randi_range(1, 46), rng.randi_range(1, 46))
+		var tone := Color8(62, 54, 45) if rng.randf() < 0.45 else Color8(27, 23, 20)
+		_px(img, p.x, p.y, tone)
+	return img
+
 func _rock_a() -> Image:
 	var img := _img(22, 16)
 	var base := Color8(96, 88, 78)
@@ -198,6 +230,73 @@ func _plate() -> Image:
 	for p in [Vector2i(3, 3), Vector2i(12, 3), Vector2i(3, 8), Vector2i(12, 8)]:
 		_px(img, p.x, p.y, Color8(106, 104, 102))
 	_line(img, Vector2(6, 4), Vector2(10, 8), Color8(85, 82, 90))
+	_outline_pass(img)
+	_bevel_pass(img)
+	return img
+
+
+func _scrap_pile() -> Image:
+	var img := _img(28, 18)
+	_ellipse(img, 14, 13, 11.5, 3.6, Color8(34, 30, 27))
+	_rect(img, 4, 9, 10, 5, Color8(92, 88, 82))
+	_rect(img, 12, 6, 10, 5, Color8(76, 74, 72))
+	_rect(img, 17, 10, 8, 4, Color8(104, 70, 36))
+	_line(img, Vector2(5, 8), Vector2(13, 3), Color8(144, 138, 126), 1.8)
+	_line(img, Vector2(15, 5), Vector2(23, 3), Color8(122, 80, 40), 1.6)
+	_line(img, Vector2(8, 14), Vector2(23, 12), Color8(45, 43, 44), 2.2)
+	_rect(img, 18, 8, 2, 2, Color8(42, 220, 218))
+	_px(img, 18, 8, Color8(210, 255, 252))
+	_px(img, 7, 10, Color8(224, 142, 42))
+	_speckle(img, Color8(48, 45, 42), 13)
+	_outline_pass(img)
+	_bevel_pass(img)
+	return img
+
+
+func _cable_coil() -> Image:
+	var img := _img(25, 18)
+	for r in [7.5, 5.5, 3.5]:
+		_ellipse(img, 11, 10, r, r * 0.62, Color8(52, 50, 50))
+		_ellipse(img, 11, 10, r - 1.4, r * 0.62 - 1.2, Color(0, 0, 0, 0))
+	_line(img, Vector2(5, 7), Vector2(15, 7), Color8(82, 78, 76), 1.0)
+	_line(img, Vector2(16, 11), Vector2(23, 14), Color8(52, 50, 50), 2.0)
+	_rect(img, 21, 12, 3, 3, Color8(196, 106, 30))
+	_px(img, 22, 13, Color8(66, 224, 220))
+	_px(img, 8, 5, Color8(94, 88, 84))
+	_px(img, 14, 9, Color8(34, 32, 32))
+	_outline_pass(img)
+	_bevel_pass(img)
+	return img
+
+
+func _barrel() -> Image:
+	var img := _img(17, 20)
+	_rect(img, 3, 3, 11, 14, Color8(86, 81, 74))
+	_ellipse(img, 8.5, 3, 5.4, 2.4, Color8(118, 108, 92))
+	_ellipse(img, 8.5, 17, 5.4, 2.4, Color8(42, 38, 34))
+	_rect(img, 3, 7, 11, 2, Color8(49, 45, 41))
+	_rect(img, 3, 13, 11, 2, Color8(49, 45, 41))
+	_rect(img, 6, 5, 5, 2, Color8(206, 112, 30))
+	_rect(img, 5, 10, 7, 1, Color8(44, 204, 198))
+	_rust(img, 12, 6, 9, Rect2i(3, 3, 11, 14))
+	_rust(img, 5, 15, 8, Rect2i(3, 3, 11, 14))
+	_outline_pass(img)
+	_bevel_pass(img)
+	return img
+
+
+func _ruined_console() -> Image:
+	var img := _img(26, 18)
+	_ellipse(img, 13, 14, 11.0, 3.0, Color8(31, 27, 24))
+	_rect(img, 3, 5, 17, 10, Color8(62, 59, 56))
+	_rect(img, 5, 6, 9, 5, Color8(20, 68, 72))
+	_rect(img, 6, 6, 5, 1, Color8(76, 240, 232))
+	_rect(img, 16, 8, 2, 2, Color8(222, 124, 34))
+	_rect(img, 19, 10, 4, 4, Color8(48, 45, 42))
+	_line(img, Vector2(3, 15), Vector2(0, 17), Color8(42, 39, 38), 1.6)
+	_line(img, Vector2(20, 15), Vector2(25, 17), Color8(42, 39, 38), 1.6)
+	_line(img, Vector2(13, 11), Vector2(18, 6), Color8(28, 24, 22), 1.0)
+	_rust(img, 4, 6, 6, Rect2i(3, 5, 17, 10))
 	_outline_pass(img)
 	_bevel_pass(img)
 	return img
@@ -375,12 +474,16 @@ func _rivet(img: Image, x: int, y: int, bright: Color) -> void:
 
 func _ui_panel() -> Image:
 	var img := _img(24, 24)
-	# Warm gunmetal, like the robot's tread housing.
-	_rect(img, 0, 0, 24, 24, Color8(38, 34, 31))
-	_rect(img, 1, 1, 22, 1, Color8(82, 76, 66))
-	_rect(img, 1, 22, 22, 1, Color8(20, 18, 16))
-	_rect(img, 1, 1, 1, 22, Color8(64, 59, 51))
-	_rect(img, 22, 1, 1, 22, Color8(26, 24, 22))
+	# Dark UNIT-7 gunmetal with orange armor corners and cyan diagnostic trim.
+	_rect(img, 0, 0, 24, 24, Color8(30, 29, 27))
+	_rect(img, 1, 1, 22, 1, Color8(112, 90, 58))
+	_rect(img, 1, 22, 22, 1, Color8(13, 12, 11))
+	_rect(img, 1, 1, 1, 22, Color8(84, 68, 48))
+	_rect(img, 22, 1, 1, 22, Color8(15, 16, 16))
+	_rect(img, 2, 2, 5, 1, Color8(218, 126, 34))
+	_rect(img, 2, 2, 1, 5, Color8(218, 126, 34))
+	_rect(img, 17, 21, 5, 1, Color8(42, 214, 204))
+	_rect(img, 21, 17, 1, 5, Color8(42, 214, 204))
 	_mottle(img, 0.05)
 	_mottle(img, 0.10, Rect2i(1, 1, 4, 4))
 	_mottle(img, 0.10, Rect2i(19, 19, 4, 4))
@@ -391,9 +494,10 @@ func _ui_panel() -> Image:
 	_rust(img, 20, 20, 14, Rect2i(19, 19, 4, 4))
 	_rust(img, 20, 3, 7, Rect2i(19, 1, 4, 4))
 	_scratch(img, Vector2(2, 21), Vector2(4, 19))
+	_scratch(img, Vector2(18, 4), Vector2(21, 2))
 	_chip_edges(img, 7)
 	for p in [Vector2i(3, 3), Vector2i(19, 3), Vector2i(3, 19), Vector2i(19, 19)]:
-		_rivet(img, p.x, p.y, Color8(116, 110, 98))
+		_rivet(img, p.x, p.y, Color8(148, 138, 118))
 	_outline_pass(img)
 	return img
 
@@ -402,8 +506,12 @@ func _ui_panel() -> Image:
 ## treatment as the character sprites. Used as a 9-patch.
 func _ui_bar() -> Image:
 	var img := _img(24, 8)
-	_rect(img, 0, 0, 24, 8, Color8(87, 83, 75))
-	_rect(img, 2, 2, 20, 4, Color8(24, 20, 16))
+	_rect(img, 0, 0, 24, 8, Color8(96, 83, 63))
+	_rect(img, 1, 1, 4, 6, Color8(190, 96, 26))
+	_rect(img, 19, 1, 4, 6, Color8(34, 156, 154))
+	_rect(img, 2, 2, 20, 4, Color8(18, 17, 16))
+	_px(img, 3, 1, Color8(238, 150, 50))
+	_px(img, 20, 1, Color8(74, 236, 226))
 	_mottle(img, 0.06, Rect2i(0, 0, 6, 8))
 	_mottle(img, 0.06, Rect2i(18, 0, 6, 8))
 	_rust(img, 2, 6, 6)
@@ -420,29 +528,36 @@ func _ui_bar_fill() -> Image:
 	_rect(img, 0, 0, 24, 6, Color8(222, 219, 210))
 	_rect(img, 0, 0, 24, 1, Color8(244, 240, 232))
 	_rect(img, 0, 5, 24, 1, Color8(164, 160, 148))
+	for x in range(2, 24, 5):
+		_px(img, x, 2, Color8(244, 240, 232))
+		_px(img, x + 1, 3, Color8(170, 166, 154))
 	return img
 
 
 func _ui_button(state: String) -> Image:
 	var img := _img(24, 24)
-	var fill := Color8(53, 50, 46)
-	var top := Color8(80, 75, 66)
-	var bottom := Color8(30, 28, 26)
-	var edge := Color8(90, 85, 76)
+	var fill := Color8(45, 43, 39)
+	var top := Color8(92, 80, 62)
+	var bottom := Color8(24, 22, 20)
+	var edge := Color8(204, 112, 30)
+	var accent := Color8(40, 210, 204)
 	match state:
 		"hover":
-			fill = Color8(62, 60, 54)
-			edge = Color8(62, 216, 204)
-			top = Color8(96, 92, 82)
+			fill = Color8(53, 52, 48)
+			edge = Color8(54, 226, 214)
+			top = Color8(104, 98, 84)
+			accent = Color8(232, 136, 38)
 		"pressed":
-			fill = Color8(38, 36, 33)
-			top = Color8(24, 23, 21)
-			bottom = Color8(60, 56, 50)
-			edge = Color8(46, 160, 152)
+			fill = Color8(31, 30, 28)
+			top = Color8(20, 19, 18)
+			bottom = Color8(76, 58, 36)
+			edge = Color8(170, 80, 22)
+			accent = Color8(30, 158, 154)
 		"disabled":
 			fill = Color8(40, 39, 38)
 			top = Color8(50, 49, 47)
 			edge = Color8(58, 56, 54)
+			accent = Color8(58, 56, 54)
 	_rect(img, 0, 0, 24, 24, fill)
 	_rect(img, 1, 1, 22, 2, top)
 	_rect(img, 1, 21, 22, 2, bottom)
@@ -450,6 +565,10 @@ func _ui_button(state: String) -> Image:
 	_rect(img, 22, 1, 1, 22, edge.darkened(0.45))
 	_rect(img, 1, 1, 22, 1, edge)
 	_rect(img, 1, 22, 22, 1, edge.darkened(0.55))
+	_rect(img, 3, 3, 5, 1, accent)
+	_rect(img, 3, 3, 1, 5, accent.darkened(0.2))
+	_rect(img, 16, 20, 5, 1, accent.darkened(0.2))
+	_rect(img, 20, 16, 1, 5, accent)
 	_mottle(img, 0.045)
 	_mottle(img, 0.09, Rect2i(1, 1, 6, 6))
 	_mottle(img, 0.09, Rect2i(17, 17, 6, 6))
