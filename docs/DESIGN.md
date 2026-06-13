@@ -144,4 +144,4 @@ Autoloads: `Meta` (permanent unlocks + save/load), `Rng` (seeded helpers).
   (`godot --headless --install-export-templates <tpz>` or Editor → Manage
   Export Templates).
 - Output is a self-contained native ELF binary (`chmod +x`, run anywhere with
-  X11/Wayland + Vulkan or GLES3). Full steps in README.md.
+  X11/Wayland + Vulkan or GLES3). Full steps in .github/copilot-instructions.md.

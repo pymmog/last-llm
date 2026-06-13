@@ -3,6 +3,7 @@ extends Node2D
 ## and the level/evolution hooks. Lives under the player's WeaponHolder.
 
 const MAX_LEVEL := 8
+const ProjectileScript := preload("res://scripts/weapons/projectile.gd")
 
 var main: Node2D
 var player: Node2D
@@ -68,7 +69,6 @@ func upgrade_desc() -> String:
 
 func spawn_projectile(pos: Vector2, vel: Vector2, damage: float, pierce: int,
 		style: String, radius: float = 5.0, life: float = 2.0) -> Node2D:
-	var ProjectileScript := load("res://scripts/weapons/projectile.gd")
 	var p: Node2D = ProjectileScript.new()
 	p.main = main
 	p.position = pos

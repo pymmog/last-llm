@@ -1,8 +1,11 @@
 extends Node2D
 ## Human-like mutants. One script drives all types; behavior and silhouette
 ## switch on `type`. Alphas are scaled-up minibosses that drop supply crates.
+## Subclass hooks for special enemies (e.g. the final boss): override
+## _run_brain() for behavior and _drop_loot() for death rewards.
 
 const EnemyProjectileScript := preload("res://scripts/enemy_projectile.gd")
+const DrawUtil := preload("res://scripts/draw_util.gd")
 const PS1_WALK_FRAMES := {
 	"shambler": [
 		preload("res://assets/sprites/shambler_walk_0.png"),
@@ -47,6 +50,16 @@ const TYPES := {
 		"color": Color(0.84, 0.26, 0.20), "scrap_chance": 0.35},
 }
 
+# Multipliers applied on top of the base type when spawned as an alpha miniboss.
+const ALPHA_MODS := {
+	"hp": 16.0,
+	"dmg": 1.6,
+	"radius": 2.2,
+	"speed": 0.85,
+	"xp": 10.0,
+	"draw_scale": 2.4,
+}
+
 var main: Node2D
 var type := "shambler"
 var hp := 10.0
@@ -85,12 +98,12 @@ func setup(m: Node2D, etype: String, pos: Vector2, hp_mult: float, dmg_mult: flo
 	color = d["color"]
 	is_alpha = alpha
 	if alpha:
-		max_hp *= 16.0
-		dmg *= 1.6
-		radius *= 2.2
-		speed *= 0.85
-		xp_value *= 10.0
-		draw_scale = 2.4
+		max_hp *= ALPHA_MODS["hp"]
+		dmg *= ALPHA_MODS["dmg"]
+		radius *= ALPHA_MODS["radius"]
+		speed *= ALPHA_MODS["speed"]
+		xp_value *= ALPHA_MODS["xp"]
+		draw_scale = ALPHA_MODS["draw_scale"]
 	hp = max_hp
 	wobble = randf() * TAU
 	anim_t = randf() * TAU
@@ -107,16 +120,7 @@ func _physics_process(delta: float) -> void:
 	state_t += delta
 	anim_t += delta * 8.0
 
-	match type:
-		"shambler":
-			var side := to_player.orthogonal().normalized() * sin(anim_t * 0.4 + wobble) * 12.0
-			position += (to_player.normalized() * speed + side) * delta
-		"sprinter":
-			_sprinter_brain(to_player, delta)
-		"spitter":
-			_spitter_brain(to_player, dist, delta)
-		"brute":
-			_brute_brain(to_player, delta)
+	_run_brain(to_player, dist, delta)
 
 	# Knockback from weapon hits decays exponentially.
 	if knockback != Vector2.ZERO:
@@ -137,6 +141,24 @@ func _physics_process(delta: float) -> void:
 		player.take_damage(dmg, position)
 		attack_cd = 0.8
 	queue_redraw()
+
+
+func _run_brain(to_player: Vector2, dist: float, delta: float) -> void:
+	## Per-type movement/attack behavior. Subclasses override this.
+	match type:
+		"shambler":
+			_shambler_brain(to_player, delta)
+		"sprinter":
+			_sprinter_brain(to_player, delta)
+		"spitter":
+			_spitter_brain(to_player, dist, delta)
+		"brute":
+			_brute_brain(to_player, delta)
+
+
+func _shambler_brain(to_player: Vector2, delta: float) -> void:
+	var side := to_player.orthogonal().normalized() * sin(anim_t * 0.4 + wobble) * 12.0
+	position += (to_player.normalized() * speed + side) * delta
 
 
 func _sprinter_brain(to_player: Vector2, delta: float) -> void:
@@ -220,24 +242,28 @@ func die() -> void:
 	Sfx.play("enemy_die", -7.0, 0.6 if is_alpha else (0.8 if type == "brute" else 1.0))
 	main.on_enemy_killed(self)
 	main.spawn_fx("pop", position, radius * 1.4, color)
-	main.spawn_xp(position, xp_value)
-	var d: Dictionary = TYPES[type]
-	if is_alpha:
-		main.spawn_pickup("crate", position)
-		main.spawn_xp(position + Vector2(30, 0), xp_value)
-		main.spawn_xp(position + Vector2(-20, 10), xp_value)
-	else:
-		if randf() < float(d["scrap_chance"]):
-			main.spawn_pickup("scrap", position, 1 + randi() % 3)
-		if randf() < 0.006:
-			main.spawn_pickup("medkit", position)
-		if randf() < 0.002:
-			main.spawn_pickup("magnet", position)
+	_drop_loot()
 	flash = 0.0
 	queue_redraw()
 	var tw := create_tween()
 	tw.tween_property(self, "modulate:a", 0.0, 0.35)
 	tw.tween_callback(queue_free)
+
+
+func _drop_loot() -> void:
+	## Death rewards. Subclasses (final boss) override this.
+	main.spawn_xp(position, xp_value)
+	if is_alpha:
+		main.spawn_pickup("crate", position)
+		main.spawn_xp(position + Vector2(30, 0), xp_value)
+		main.spawn_xp(position + Vector2(-20, 10), xp_value)
+		return
+	if randf() < float(TYPES[type]["scrap_chance"]):
+		main.spawn_pickup("scrap", position, 1 + randi() % 3)
+	if randf() < 0.006:
+		main.spawn_pickup("medkit", position)
+	if randf() < 0.002:
+		main.spawn_pickup("magnet", position)
 
 
 # ---------------------------------------------------------------- drawing
@@ -256,8 +282,8 @@ func _draw() -> void:
 	# Source sprites face left; flip when the player is to the right.
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f * s, s))
 	# Shadow
-	_ellipse(Vector2(0, 13), Vector2(maxf(radius * 0.9, 8.0), 3.8), Color(0, 0, 0, 0.34))
-	draw_ps1_sprite(frame, sprite_height, Vector2(0, 16.0 + sin(anim_t * 2.0) * 0.6), sprite_modulate)
+	DrawUtil.ellipse(self, Vector2(0, 13), Vector2(maxf(radius * 0.9, 8.0), 3.8), Color(0, 0, 0, 0.34), 12)
+	DrawUtil.ps1_sprite(self, frame, sprite_height, Vector2(0, 16.0 + sin(anim_t * 2.0) * 0.6), sprite_modulate)
 	if type == "brute" and (state == "telegraph" or state == "charge"):
 		draw_arc(Vector2.ZERO, 17.0, PI * 0.08, PI * 0.92, 18, Color(1.0, 0.75, 0.2, 0.55), 1.4)
 	if type == "sprinter" and (state == "aim" or state == "lunge"):
@@ -297,24 +323,6 @@ func _draw_alpha_mark(edge: Color, sprite_height: float) -> void:
 		]), gold, edge, 0.8)
 	draw_line(Vector2(-9, base_y - 1.0), Vector2(9, base_y - 1.0), edge, 1.5)
 	draw_line(Vector2(-8, base_y - 1.0), Vector2(8, base_y - 1.0), gold.darkened(0.05), 0.9)
-
-
-func draw_ps1_sprite(texture: Texture2D, target_height: float, foot: Vector2, modulate: Color) -> void:
-	var tex_size := texture.get_size()
-	var target_width := target_height * tex_size.x / tex_size.y
-	var rect := Rect2(
-		Vector2(-target_width * 0.5, foot.y - target_height),
-		Vector2(target_width, target_height)
-	)
-	draw_texture_rect(texture, rect, false, modulate)
-
-
-func _ellipse(center: Vector2, r: Vector2, col: Color) -> void:
-	var pts := PackedVector2Array()
-	for i in 12:
-		var a := TAU * i / 12.0
-		pts.append(center + Vector2(cos(a) * r.x, sin(a) * r.y))
-	draw_colored_polygon(pts, col)
 
 
 func _panel(pts: PackedVector2Array, fill: Color, edge: Color, width: float = 1.2) -> void:

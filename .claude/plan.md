@@ -1,8 +1,8 @@
 # RUSTPULSE — Project Plan & Working Notes
 
 Context file for future development sessions. Read this before changing code.
-The full game design spec lives in `docs/DESIGN.md`; the player-facing docs
-(run/export instructions for Linux and macOS) are in `README.md`. The
+The full game design spec lives in `docs/DESIGN.md`; player-facing docs are in `README.md`; build/export/CI/testing
+instructions are in `.github/copilot-instructions.md`. The
 prioritized improvement roadmap is in `.claude/next-steps.md`.
 
 ## What this is

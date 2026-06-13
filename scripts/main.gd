@@ -30,6 +30,7 @@ var run_time := 0.0
 var kills := 0
 var scrap_earned := 0
 var run_over := false
+var finale_started := false
 var shake_amount := 0.0
 var _hitstop_active := false
 
@@ -78,9 +79,13 @@ func _physics_process(delta: float) -> void:
 	if run_over:
 		return
 	run_time += delta
-	if run_time >= RUN_DURATION:
-		end_run(true)
-		return
+	if run_time >= RUN_DURATION and not finale_started:
+		# Surviving the timer hands control to the director's finale
+		# (currently instant victory; final boss arena later).
+		finale_started = true
+		director.start_finale()
+		if run_over:
+			return
 	# Drop dead enemies from the live list once per frame.
 	var alive: Array = []
 	for e in enemies:
@@ -155,11 +160,13 @@ func _exit_tree() -> void:
 
 # ---------------------------------------------------------------- queries
 
-func nearest_enemy(from: Vector2, max_range: float) -> Node2D:
+func nearest_enemy(from: Vector2, max_range: float, exclude: Dictionary = {}) -> Node2D:
+	## `exclude`: enemy instance ids to skip (projectile pierce sets,
+	## tesla chain visited sets).
 	var best: Node2D = null
 	var best_d := max_range * max_range
 	for e in enemies:
-		if not is_instance_valid(e) or e.dead:
+		if not is_instance_valid(e) or e.dead or exclude.has(e.get_instance_id()):
 			continue
 		var d: float = from.distance_squared_to(e.position)
 		if d < best_d:
