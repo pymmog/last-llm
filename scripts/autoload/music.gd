@@ -48,6 +48,11 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _thread and _thread.is_started():
 		_thread.wait_to_finish()
+	if _player:
+		_player.stop()
+		_player.stream = null
+		_player.free()
+		_player = null
 
 
 func _render() -> void:
@@ -55,6 +60,8 @@ func _render() -> void:
 
 
 func _publish(buf: PackedFloat32Array) -> void:
+	if not is_instance_valid(_player):
+		return
 	var data := PackedByteArray()
 	data.resize(buf.size() * 2)
 	for i in buf.size():
@@ -67,7 +74,8 @@ func _publish(buf: PackedFloat32Array) -> void:
 	s.loop_begin = 0
 	s.loop_end = buf.size()
 	_player.stream = s
-	_player.play()
+	if DisplayServer.get_name() != "headless":
+		_player.play()
 
 
 # ---------------------------------------------------------------- compose

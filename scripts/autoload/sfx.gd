@@ -39,6 +39,19 @@ func _ready() -> void:
 	get_tree().node_added.connect(_on_node_added)
 
 
+func _exit_tree() -> void:
+	if get_tree().node_added.is_connected(_on_node_added):
+		get_tree().node_added.disconnect(_on_node_added)
+	for p in _players:
+		if is_instance_valid(p):
+			p.stop()
+			p.stream = null
+			p.free()
+	_players.clear()
+	_streams.clear()
+	_last.clear()
+
+
 func play(sfx_name: String, volume_db := 0.0, pitch := 1.0) -> void:
 	var stream: AudioStreamWAV = _streams.get(sfx_name)
 	if stream == null:
