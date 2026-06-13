@@ -76,11 +76,12 @@ and uploads them as artifacts. Godot editor + export templates are cached
 One-time template install (must match the editor version):
 
 ```sh
-curl -LO https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz
-unzip Godot_v4.6-stable_export_templates.tpz   # contains templates/
+GODOT_VERSION=4.6  # use the full editor version if patched, e.g. 4.6.3
+curl -LO https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+unzip Godot_v${GODOT_VERSION}-stable_export_templates.tpz   # contains templates/
 mkdir -p ~/.local/share/godot/export_templates
-mv templates ~/.local/share/godot/export_templates/4.6.stable
-# macOS path: ~/Library/Application Support/Godot/export_templates/4.6.stable
+mv templates ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+# macOS path: ~/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.stable
 ```
 
 Then:
