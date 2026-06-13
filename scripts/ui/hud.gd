@@ -151,7 +151,7 @@ func _process(delta: float) -> void:
 	hp_label.text = "%d / %d" % [int(p.hp), int(p.max_hp)]
 	level_label.text = "LV %d" % p.level
 	var t := int(main.run_time)
-	timer_label.text = "%02d:%02d" % [t / 60, t % 60]
+	timer_label.text = "%02d:%02d" % [int(t / 60.0), t % 60]
 	timer_label.position.x = get_viewport().get_visible_rect().size.x / 2.0 - 40.0
 	level_label.position.x = get_viewport().get_visible_rect().size.x - 80.0
 	kills_label.text = "KILLS %d" % main.kills
@@ -386,7 +386,7 @@ func show_end_screen(victory: bool) -> void:
 	box.add_child(title)
 	var t := int(main.run_time)
 	for line in [
-		"Time survived:  %02d:%02d" % [t / 60, t % 60],
+		"Time survived:  %02d:%02d" % [int(t / 60.0), t % 60],
 		"Mutants destroyed:  %d" % main.kills,
 		"Scrap banked:  +%d" % main.scrap_earned,
 	]:

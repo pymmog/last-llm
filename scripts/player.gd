@@ -205,9 +205,9 @@ func heal(amount: float) -> void:
 func _draw() -> void:
 	var f := facing
 	var glow := Color(0.08, 0.95, 1.0)
-	var modulate := Color(1, 1, 1, 1)
+	var sprite_tint := Color(1, 1, 1, 1)
 	if invuln > 0.0 and fmod(invuln, 0.12) > 0.06:
-		modulate = Color(1.8, 1.8, 1.8, 1)
+		sprite_tint = Color(1.8, 1.8, 1.8, 1)
 	var frame: Texture2D = PS1_TREAD_FRAMES[int(anim_t) % PS1_TREAD_FRAMES.size()] if moving else PS1_TREAD_FRAMES[0]
 	# Treads stay planted; vertical bob against a fixed shadow reads as hovering.
 	var foot := Vector2(0, 16)
@@ -217,7 +217,7 @@ func _draw() -> void:
 
 	# Source sprite faces left; flip when facing right.
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(-f, 1.0))
-	DrawUtil.ps1_sprite(self, frame, PS1_SPRITE_HEIGHT, foot, modulate)
+	DrawUtil.ps1_sprite(self, frame, PS1_SPRITE_HEIGHT, foot, sprite_tint)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	if shield_ready:

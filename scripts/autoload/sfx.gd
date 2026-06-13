@@ -233,12 +233,12 @@ func _tone_seq(notes: Array, note_dur: float, wave: int, vol: float) -> PackedFl
 	var phase := 0.0
 	for k in notes.size():
 		var start := int(k * note_dur * MIX_RATE)
-		var len := int(note_dur * MIX_RATE * 1.5)
-		for i in len:
+		var sample_count := int(note_dur * MIX_RATE * 1.5)
+		for i in sample_count:
 			var idx := start + i
 			if idx >= buf.size():
 				break
-			var t := float(i) / len
+			var t := float(i) / sample_count
 			phase += float(notes[k]) / MIX_RATE
 			var env := pow(1.0 - t, 1.8) * minf(float(i) / 32.0, 1.0)
 			buf[idx] += _osc(wave, phase) * vol * env

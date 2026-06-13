@@ -108,7 +108,7 @@ func _update_stats() -> void:
 		"Area x%.2f   Projectiles +%d   Pierce +%d" % [
 			p.area_mult, p.extra_projectiles, p.extra_pierce],
 		"",
-		"Run %02d:%02d   Kills %d   Scrap +%d" % [t / 60, t % 60, main.kills, main.scrap_earned],
+		"Run %02d:%02d   Kills %d   Scrap +%d" % [int(t / 60.0), t % 60, main.kills, main.scrap_earned],
 		"Enemies %d   Gems %d   FX %d   FPS %d" % [
 			main.enemies.size(),
 			get_tree().get_nodes_in_group("xp_gems").size(),
