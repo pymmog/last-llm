@@ -48,6 +48,11 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _thread and _thread.is_started():
 		_thread.wait_to_finish()
+	if _player:
+		_player.stop()
+		_player.stream = null
+		_player.free()
+		_player = null
 
 
 func _render() -> void:
@@ -55,6 +60,8 @@ func _render() -> void:
 
 
 func _publish(buf: PackedFloat32Array) -> void:
+	if not is_instance_valid(_player):
+		return
 	var data := PackedByteArray()
 	data.resize(buf.size() * 2)
 	for i in buf.size():
@@ -67,7 +74,8 @@ func _publish(buf: PackedFloat32Array) -> void:
 	s.loop_begin = 0
 	s.loop_end = buf.size()
 	_player.stream = s
-	_player.play()
+	if DisplayServer.get_name() != "headless":
+		_player.play()
 
 
 # ---------------------------------------------------------------- compose
@@ -122,11 +130,11 @@ func _tone(buf: PackedFloat32Array, at: float, dur: float, freq: float,
 		wave: int, vol: float, attack: float, decay: float, vibrato := 0.0) -> void:
 	var n := buf.size()
 	var start := int(at * MIX_RATE)
-	var len := int(dur * MIX_RATE)
+	var sample_count := int(dur * MIX_RATE)
 	var attack_len := maxf(attack * MIX_RATE, 16.0)
 	var phase := 0.0
-	for i in len:
-		var t := float(i) / len
+	for i in sample_count:
+		var t := float(i) / sample_count
 		var f := freq
 		if vibrato > 0.0:
 			f *= 1.0 + 0.012 * sin(TAU * vibrato * i / MIX_RATE)
@@ -143,10 +151,10 @@ func _tone(buf: PackedFloat32Array, at: float, dur: float, freq: float,
 func _kick(buf: PackedFloat32Array, at: float, vol := 1.0) -> void:
 	var n := buf.size()
 	var start := int(at * MIX_RATE)
-	var len := int(0.22 * MIX_RATE)
+	var sample_count := int(0.22 * MIX_RATE)
 	var phase := 0.0
-	for i in len:
-		var t := float(i) / len
+	for i in sample_count:
+		var t := float(i) / sample_count
 		phase += lerpf(110.0, 38.0, t) / MIX_RATE
 		buf[(start + i) % n] += sin(phase * TAU) * 0.5 * vol * pow(1.0 - t, 1.6)
 
@@ -164,10 +172,10 @@ func _noise(buf: PackedFloat32Array, at: float, dur: float, vol: float,
 		lowpass: float, decay: float) -> void:
 	var n := buf.size()
 	var start := int(at * MIX_RATE)
-	var len := int(dur * MIX_RATE)
+	var sample_count := int(dur * MIX_RATE)
 	var y := 0.0
-	for i in len:
-		var t := float(i) / len
+	for i in sample_count:
+		var t := float(i) / sample_count
 		y += lowpass * (_rng.randf_range(-1.0, 1.0) - y)
 		buf[(start + i) % n] += y * vol * pow(1.0 - t, decay)
 

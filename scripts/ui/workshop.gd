@@ -45,7 +45,7 @@ func _ready() -> void:
 	box.add_child(back)
 	_refresh()
 	var first_id: String = Meta.UPGRADES.keys()[0]
-	(rows[first_id]["btn"] as Button).grab_focus.call_deferred()
+	UiTheme.focus_when_ready(rows[first_id]["btn"] as Button)
 
 
 func _unhandled_input(event: InputEvent) -> void:

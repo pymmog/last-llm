@@ -39,6 +39,19 @@ func _ready() -> void:
 	get_tree().node_added.connect(_on_node_added)
 
 
+func _exit_tree() -> void:
+	if get_tree().node_added.is_connected(_on_node_added):
+		get_tree().node_added.disconnect(_on_node_added)
+	for p in _players:
+		if is_instance_valid(p):
+			p.stop()
+			p.stream = null
+			p.free()
+	_players.clear()
+	_streams.clear()
+	_last.clear()
+
+
 func play(sfx_name: String, volume_db := 0.0, pitch := 1.0) -> void:
 	var stream: AudioStreamWAV = _streams.get(sfx_name)
 	if stream == null:
@@ -220,12 +233,12 @@ func _tone_seq(notes: Array, note_dur: float, wave: int, vol: float) -> PackedFl
 	var phase := 0.0
 	for k in notes.size():
 		var start := int(k * note_dur * MIX_RATE)
-		var len := int(note_dur * MIX_RATE * 1.5)
-		for i in len:
+		var sample_count := int(note_dur * MIX_RATE * 1.5)
+		for i in sample_count:
 			var idx := start + i
 			if idx >= buf.size():
 				break
-			var t := float(i) / len
+			var t := float(i) / sample_count
 			phase += float(notes[k]) / MIX_RATE
 			var env := pow(1.0 - t, 1.8) * minf(float(i) / 32.0, 1.0)
 			buf[idx] += _osc(wave, phase) * vol * env

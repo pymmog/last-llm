@@ -151,7 +151,7 @@ func _process(delta: float) -> void:
 	hp_label.text = "%d / %d" % [int(p.hp), int(p.max_hp)]
 	level_label.text = "LV %d" % p.level
 	var t := int(main.run_time)
-	timer_label.text = "%02d:%02d" % [t / 60, t % 60]
+	timer_label.text = "%02d:%02d" % [int(t / 60.0), t % 60]
 	timer_label.position.x = get_viewport().get_visible_rect().size.x / 2.0 - 40.0
 	level_label.position.x = get_viewport().get_visible_rect().size.x - 80.0
 	kills_label.text = "KILLS %d" % main.kills
@@ -247,7 +247,7 @@ func _show_levelup() -> void:
 		cards_box.add_child(_make_card(card))
 	levelup_panel.visible = true
 	# Seed focus so arrows/d-pad + accept work without a mouse.
-	(cards_box.get_child(0) as Button).grab_focus.call_deferred()
+	UiTheme.focus_when_ready(cards_box.get_child(0) as Control)
 
 
 func _make_card(card: Dictionary) -> Button:
@@ -351,7 +351,7 @@ func _open_settings() -> void:
 func _close_settings() -> void:
 	settings_panel.visible = false
 	pause_panel.visible = true
-	resume_btn.grab_focus.call_deferred()
+	UiTheme.focus_when_ready(resume_btn)
 
 
 func _toggle_pause() -> void:
@@ -360,7 +360,7 @@ func _toggle_pause() -> void:
 	pause_panel.visible = now
 	get_tree().paused = now
 	if now:
-		resume_btn.grab_focus.call_deferred()
+		UiTheme.focus_when_ready(resume_btn)
 
 
 func _on_abandon() -> void:
@@ -386,7 +386,7 @@ func show_end_screen(victory: bool) -> void:
 	box.add_child(title)
 	var t := int(main.run_time)
 	for line in [
-		"Time survived:  %02d:%02d" % [t / 60, t % 60],
+		"Time survived:  %02d:%02d" % [int(t / 60.0), t % 60],
 		"Mutants destroyed:  %d" % main.kills,
 		"Scrap banked:  +%d" % main.scrap_earned,
 	]:
@@ -402,7 +402,7 @@ func show_end_screen(victory: bool) -> void:
 	box.add_child(cont)
 	end_panel.visible = true
 	get_tree().paused = true
-	cont.grab_focus.call_deferred()
+	UiTheme.focus_when_ready(cont)
 
 
 func _on_end_continue() -> void:

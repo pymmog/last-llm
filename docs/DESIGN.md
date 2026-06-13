@@ -119,7 +119,8 @@ Main.tscn      (Node2D + main.gd — the run; children built in code)
       ├─ PauseMenu / GameOver / Victory overlays
 ```
 
-Autoloads: `Meta` (permanent unlocks + save/load), `Rng` (seeded helpers).
+Autoloads: `Meta` (permanent unlocks + save/load), `Settings` (audio/display
+preferences), `Sfx` and `Music` (procedural audio).
 
 ## Milestones
 

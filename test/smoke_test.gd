@@ -157,9 +157,12 @@ func _physics_process(_delta: float) -> void:
 			check(main.scrap_earned >= 7, "scrap collected (earned=%d)" % main.scrap_earned)
 			main.explode(player.position + Vector2(50, 0), 80.0, 10.0, true, 5.0)
 		400:
+			# Drive the real end-of-run path the 20:00 timer uses: the
+			# director's finale seam (boss arena later), not end_run directly.
 			var before: int = Meta.scrap
-			main.end_run(true)
-			check(main.run_over, "run ended")
+			main.director.start_finale()
+			check(main.director.finale_active, "finale seam armed (stops wave spawns)")
+			check(main.run_over, "finale ended the run")
 			check(Meta.scrap > before, "scrap banked to meta save")
 			check(main.hud.end_panel != null and main.hud.end_panel.visible, "end screen shown")
 		430:

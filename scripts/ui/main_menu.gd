@@ -37,7 +37,7 @@ func _ready() -> void:
 	box.add_child(_spacer(24))
 	var start := _button("START RUN", _on_start)
 	box.add_child(start)
-	start.grab_focus.call_deferred()
+	UiTheme.focus_when_ready(start)
 	box.add_child(_button("WORKSHOP", _on_workshop))
 	box.add_child(_button("SETTINGS", _on_settings))
 	box.add_child(_button("QUIT", _on_quit))
@@ -46,7 +46,7 @@ func _ready() -> void:
 	var stats := Label.new()
 	var bt := int(Meta.best_time)
 	stats.text = "Scrap: %d    Best time: %02d:%02d    Total kills: %d    Victories: %d" % [
-		Meta.scrap, bt / 60, bt % 60, Meta.total_kills, Meta.victories]
+		Meta.scrap, int(bt / 60.0), bt % 60, Meta.total_kills, Meta.victories]
 	stats.add_theme_font_size_override("font_size", 14)
 	stats.add_theme_color_override("font_color", Color(0.72, 0.68, 0.6))
 	stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

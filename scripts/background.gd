@@ -121,8 +121,8 @@ func _draw_cell(cx: int, cy: int) -> void:
 			draw_circle(p + Vector2(7, 4), 1.6, Color(0.18, 0.16, 0.13))
 
 
-func _draw_prop(name: String, p: Vector2, h: int) -> void:
-	var tex: Texture2D = PROPS[name]
+func _draw_prop(prop_name: String, p: Vector2, h: int) -> void:
+	var tex: Texture2D = PROPS[prop_name]
 	# 1.6x: keeps the chunky pixels readable against the dark floor.
 	var size := tex.get_size() / SPRITE_SCALE * 1.6
 	var rect := Rect2(p - size * 0.5, size)
