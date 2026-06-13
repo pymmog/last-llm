@@ -6,6 +6,8 @@ extends VBoxContainer
 
 signal closed
 
+const UiTheme := preload("res://scripts/ui/ui_theme.gd")
+
 var grid: GridContainer
 var _first_focus: Control
 
@@ -85,7 +87,7 @@ func _ready() -> void:
 
 func focus_first() -> void:
 	if _first_focus:
-		_first_focus.grab_focus.call_deferred()
+		UiTheme.focus_when_ready(_first_focus)
 
 
 func _add_row(text: String, control: Control) -> void:

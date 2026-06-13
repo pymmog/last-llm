@@ -37,7 +37,7 @@ func _ready() -> void:
 	box.add_child(_spacer(24))
 	var start := _button("START RUN", _on_start)
 	box.add_child(start)
-	start.grab_focus.call_deferred()
+	UiTheme.focus_when_ready(start)
 	box.add_child(_button("WORKSHOP", _on_workshop))
 	box.add_child(_button("SETTINGS", _on_settings))
 	box.add_child(_button("QUIT", _on_quit))

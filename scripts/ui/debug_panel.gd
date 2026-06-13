@@ -66,7 +66,7 @@ func toggle() -> void:
 	if now:
 		god_check.set_pressed_no_signal(main.player.god_mode)
 		_update_stats()
-		god_check.grab_focus.call_deferred()
+		UiTheme.focus_when_ready(god_check)
 
 
 func _process(_delta: float) -> void:

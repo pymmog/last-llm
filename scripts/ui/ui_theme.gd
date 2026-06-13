@@ -90,6 +90,16 @@ static func center_panel(overlay_node: Control) -> VBoxContainer:
 	return box
 
 
+static func focus_when_ready(control: Control) -> void:
+	_grab_focus_if_ready.call_deferred(control)
+
+
+static func _grab_focus_if_ready(control: Control) -> void:
+	if is_instance_valid(control) and not control.is_queued_for_deletion() \
+			and control.is_inside_tree() and control.is_visible_in_tree():
+		control.grab_focus()
+
+
 static func _box(path: String, content_margin: float = 10.0) -> StyleBoxTexture:
 	var b := StyleBoxTexture.new()
 	b.texture = load(path)
