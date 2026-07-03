@@ -276,15 +276,21 @@ func explode(pos: Vector2, radius: float, damage: float, burn: bool = false, bur
 	Sfx.play("explosion", -4.0)
 	add_shake(4.0)
 	if burn:
-		var fx: Node2D = FxScript.new()
-		fx.main = self
-		fx.kind = "burn"
-		fx.radius = radius * 0.9
-		fx.color = Color(1.0, 0.45, 0.1)
-		fx.life = 3.0
-		fx.burn_dps = burn_dps
-		fx.position = pos
-		fx_node.add_child(fx)
+		spawn_burn(pos, radius * 0.9, burn_dps)
+
+
+func spawn_burn(pos: Vector2, radius: float, dps: float, duration: float = 3.0) -> void:
+	if fx_node.get_child_count() > 300:
+		return
+	var fx: Node2D = FxScript.new()
+	fx.main = self
+	fx.kind = "burn"
+	fx.radius = radius
+	fx.color = Color(1.0, 0.45, 0.1)
+	fx.life = duration
+	fx.burn_dps = dps
+	fx.position = pos
+	fx_node.add_child(fx)
 
 
 # ---------------------------------------------------------------- crates / end

@@ -15,7 +15,7 @@ Runs on **Linux, macOS and Windows** (pure GDScript, no platform-specific code).
 ## Features
 
 - **Movement-only control** — WASD / arrow keys / gamepad left stick; Esc pauses
-- **5 auto-attacking weapons**, 8 levels each, each with a **weapon evolution**
+- **6 auto-attacking weapons**, 8 levels each, each with a **weapon evolution**
   unlocked by pairing it with the right passive
 - **11 passive upgrades** — fire rate, cooldowns, HP, regen, armor,
   projectiles, pierce, AoE, damage, speed, magnet

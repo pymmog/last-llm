@@ -19,7 +19,7 @@ scripts/player.gd         movement-only control, live stats, XP, sprite animatio
 scripts/enemy.gd          all mutant types; override _run_brain()/_drop_loot() for bosses
 scripts/director.gd       wave scaling, type unlocks, alpha schedule, start_finale() hook
 scripts/upgrades.gd       weapon/passive catalog + level-up card generator
-scripts/weapons/          weapon_base.gd + 5 weapons + friendly projectile
+scripts/weapons/          weapon_base.gd + 6 weapons + friendly projectile
 scripts/pickups/          XP gems, medkits, scrap, magnets, crates
 scripts/ui/               HUD, debug panel, menus, Workshop, shared ui_theme.gd
 scripts/draw_util.gd      shared PS1-sprite/ellipse draw statics

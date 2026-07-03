@@ -11,7 +11,7 @@ func _init() -> void:
 
 func cooldown() -> float:
 	if evolved:
-		return 1.0
+		return 1.1
 	var c := 0.9
 	if level >= 4:
 		c *= 0.85
@@ -31,7 +31,7 @@ func shot_count() -> int:
 
 func shot_damage() -> float:
 	if evolved:
-		return dmg(60.0)
+		return dmg(50.0)
 	var d := 8.0
 	if level >= 3:
 		d += 4.0

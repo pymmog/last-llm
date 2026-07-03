@@ -32,7 +32,7 @@ func shell_count() -> int:
 
 func shell_damage() -> float:
 	if evolved:
-		return dmg(55.0)
+		return dmg(65.0)
 	var d := 25.0
 	if level >= 3:
 		d += 10.0
@@ -66,7 +66,7 @@ func fire() -> bool:
 		p.target_point = target
 		p.explode_radius = blast_radius()
 		p.burn = evolved
-		p.burn_dps = dmg(9.0) if evolved else 0.0
+		p.burn_dps = dmg(12.0) if evolved else 0.0
 		fired = true
 	if fired:
 		Sfx.play("mortar", -3.0)

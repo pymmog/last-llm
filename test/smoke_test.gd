@@ -79,7 +79,7 @@ func _physics_process(_delta: float) -> void:
 			for id in Upgrades.WEAPONS:
 				if player.get_weapon(id) == null:
 					player.add_weapon(id)
-			check(player.weapons.size() == 5, "all weapons equipped")
+			check(player.weapons.size() == Upgrades.WEAPONS.size(), "all weapons equipped")
 		20:
 			for id in Upgrades.PASSIVES:
 				player.add_passive(id)

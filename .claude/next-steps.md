@@ -15,10 +15,11 @@ as items land.
 
 ## P2 — Content depth
 
-2. **2–3 new weapons + evolutions.** Candidates from the spec's style:
-   Flamethrower cone (DoT), Boomerang blade (out-and-back pierce), Guardian
-   turret (stationary, fires while you kite). Pattern: new script extending
+2. **1–2 more new weapons + evolutions.** Remaining candidates from the
+   spec's style: Boomerang blade (out-and-back pierce), Guardian turret
+   (stationary, fires while you kite). Pattern: new script extending
    `weapon_base.gd` + entry in `Upgrades.WEAPONS` + smoke-test coverage.
+   (Flamethrower cone + Inferno Vent evolution landed 2026-07.)
 3. **2 new enemy types.** Screamer (cyan): buffs nearby mutants' speed —
    priority target, distinct audio cue. Bloater (orange): slow, explodes on
    death leaving an acid pool (reuse the `burn` FX with a green palette).
@@ -63,6 +64,9 @@ as items land.
 
 ## Done
 
+- ✅ Flamethrower cone weapon + Inferno Vent evolution (issue #12); formula
+  balance pass on weapon numbers — Nano Swarm/Gray Goo and Sunfire buffed,
+  Railspike trimmed (issue #11) (2026-07)
 - ✅ Design spec, full game loop, 5 weapons + evolutions, 4 enemy types +
   alphas, 11 passives, Workshop meta progression (2026-06)
 - ✅ Linux export preset + verified native build; headless smoke test (2026-06)

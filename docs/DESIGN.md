@@ -49,6 +49,7 @@ enemies (oldest far-off-screen enemies are recycled). Survive **20:00** to win.
 | **Tesla Arc** | Zaps a random nearby enemy, chains to neighbors. | + *Capacitor Bank* → **Storm Coil**: longer chains, rapid cadence. |
 | **Plasma Mortar** | Lobs an AoE shell at the densest cluster. | + *Wide-Area Emitter* → **Sunfire Battery**: bigger blasts that leave burning ground. |
 | **Nano Swarm** | Launches homing nano-drones. | + *Targeting Matrix* → **Gray Goo**: bigger volleys, drones pierce. |
+| **Flamethrower** | Sweeps a cone of fire toward the nearest enemy, ticking AoE damage. | + *Power Core* → **Inferno Vent**: huge cone that leaves burning ground. |
 
 Weapons level 1→8 via level-up picks. Evolution requires the weapon at max
 level **and** owning its paired passive; it is then guaranteed among the next
