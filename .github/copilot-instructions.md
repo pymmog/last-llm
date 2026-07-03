@@ -66,9 +66,10 @@ godot -s tools/screenshot.gd -- res://scenes/main.tscn /tmp/shot.png 120
 
 ## CI
 
-[`build.yml`](workflows/build.yml) runs on every master push / PR:
-headless smoke test, then exports **Linux AppImage / macOS .app / Windows .exe**
-and uploads them as artifacts. Godot editor + export templates are cached
+[`build.yml`](workflows/build.yml): every master push / PR runs the headless
+smoke test; exports of **Linux AppImage / macOS .app / Windows .exe** (uploaded
+as artifacts) only run on master pushes (i.e. after a PR merges) and manual
+dispatches. Godot editor + export templates are cached
 (key `godot-4.6-stable-v1` — bump when changing `GODOT_VERSION`).
 
 ## Export (local)

@@ -73,8 +73,9 @@ as items land.
 - ✅ macOS export preset, verified via Linux cross-export; macOS player
   instructions in README (2026-06)
 - ✅ Windows export preset (unsigned, rcedit-free) verified via cross-export;
-  GitHub Actions CI: smoke test gate + Linux AppImage / macOS .app / Windows
-  .exe artifacts on every master push and PR (2026-06)
+  GitHub Actions CI: smoke test gate on every master push and PR + Linux
+  AppImage / macOS .app / Windows .exe artifacts on master pushes only
+  (post-merge; 2026-06, split 2026-07)
 - ✅ Audio: fully procedural `Sfx` + `Music` autoloads — 20+ synthesized SFX
   with a pooled/throttled player set, looping dark-synth track generated on a
   worker thread, routed through Music/SFX buses (2026-06)

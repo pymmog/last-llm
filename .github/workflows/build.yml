@@ -14,8 +14,62 @@ env:
   GODOT_VERSION: "4.6"
 
 jobs:
+  test:
+    name: Smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot editor and export templates
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot-bin
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-stable-v1
+
+      - name: Install Godot and export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p ~/godot-bin
+          curl -fsSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d /tmp
+          mv "/tmp/Godot_v${GODOT_VERSION}-stable_linux.x86_64" ~/godot-bin/godot
+          chmod +x ~/godot-bin/godot
+          # The .tpz is a zip with a top-level templates/ dir; install only the
+          # platforms we export to keep the cache small. Templates are only
+          # needed by the build job, but they share this cache entry.
+          curl -fsSL -o /tmp/templates.tpz \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q /tmp/templates.tpz -d /tmp/tpl \
+            'templates/linux_release.x86_64' \
+            'templates/linux_debug.x86_64' \
+            'templates/macos.zip' \
+            'templates/windows_release_x86_64.exe' \
+            'templates/windows_release_x86_64_console.exe'
+          mkdir -p ~/.local/share/godot/export_templates
+          mv /tmp/tpl/templates ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+
+      - name: Import project
+        run: ~/godot-bin/godot --headless --import
+
+      - name: Run smoke test
+        run: |
+          set -euo pipefail
+          ~/godot-bin/godot --headless res://test/smoke_test.tscn --quit-after 1200 2>&1 | tee smoke.log
+          grep -q "SMOKE OK" smoke.log
+          if grep -q "FAIL" smoke.log; then exit 1; fi
+
   build:
-    name: Test & export (Linux AppImage / macOS / Windows)
+    name: Export (Linux AppImage / macOS / Windows)
+    # Exports are expensive; only build artifacts when a PR lands on master
+    # (or on a manual run). PRs just gate on the smoke test above.
+    if: github.event_name != 'pull_request'
+    needs: test
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -40,8 +94,6 @@ jobs:
           unzip -q /tmp/godot.zip -d /tmp
           mv "/tmp/Godot_v${GODOT_VERSION}-stable_linux.x86_64" ~/godot-bin/godot
           chmod +x ~/godot-bin/godot
-          # The .tpz is a zip with a top-level templates/ dir; install only the
-          # platforms we export to keep the cache small.
           curl -fsSL -o /tmp/templates.tpz \
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
           unzip -q /tmp/templates.tpz -d /tmp/tpl \
@@ -55,13 +107,6 @@ jobs:
 
       - name: Import project
         run: ~/godot-bin/godot --headless --import
-
-      - name: Run smoke test
-        run: |
-          set -euo pipefail
-          ~/godot-bin/godot --headless res://test/smoke_test.tscn --quit-after 1200 2>&1 | tee smoke.log
-          grep -q "SMOKE OK" smoke.log
-          if grep -q "FAIL" smoke.log; then exit 1; fi
 
       - name: Export Linux binary
         run: |
