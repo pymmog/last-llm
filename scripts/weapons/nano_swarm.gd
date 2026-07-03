@@ -11,8 +11,8 @@ func _init() -> void:
 
 func cooldown() -> float:
 	if evolved:
-		return 1.6
-	var c := 2.2
+		return 1.4
+	var c := 2.0
 	if level >= 4:
 		c -= 0.3
 	if level >= 7:
@@ -35,12 +35,12 @@ func drone_count() -> int:
 
 func drone_damage() -> float:
 	if evolved:
-		return dmg(14.0)
-	var d := 7.0
+		return dmg(24.0)
+	var d := 8.0
 	if level >= 3:
 		d += 3.0
 	if level >= 6:
-		d += 4.0
+		d += 5.0
 	return dmg(d)
 
 
@@ -66,7 +66,7 @@ func upgrade_desc() -> String:
 		3: return "+3 damage"
 		4: return "Faster launch"
 		5: return "+1 drone"
-		6: return "+4 damage"
+		6: return "+5 damage"
 		7: return "Faster launch"
 		8: return "+2 drones"
 	return "More power"

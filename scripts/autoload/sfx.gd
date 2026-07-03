@@ -17,6 +17,7 @@ const MIN_GAP_MS := {
 	"xp": 50,
 	"explosion": 90,
 	"ui_move": 45,
+	"flamer": 180,
 }
 
 var _streams: Dictionary = {}
@@ -115,6 +116,12 @@ func _generate_all() -> void:
 	b = _buf(0.16)
 	_sweep(b, 350, 1000, 3, 0.18, 0.7)
 	_streams["swarm"] = _wav(b)
+
+	# Flamethrower: breathy roaring whoosh.
+	b = _buf(0.3)
+	_noise(b, 0.55, 0.25, 1.2)
+	_sweep(b, 140, 70, 0, 0.22, 1.0)
+	_streams["flamer"] = _wav(b)
 
 	# Spitter glob: wet descending blip.
 	b = _buf(0.14)

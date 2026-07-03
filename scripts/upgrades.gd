@@ -12,6 +12,8 @@ const WEAPONS := {
 		"desc": "Shells the densest cluster", "pair": "emitter", "evolved": "Sunfire Battery"},
 	"swarm": {"name": "Nano Swarm", "script": "res://scripts/weapons/nano_swarm.gd",
 		"desc": "Homing nano-drones", "pair": "matrix", "evolved": "Gray Goo"},
+	"flamer": {"name": "Flamethrower", "script": "res://scripts/weapons/flamethrower.gd",
+		"desc": "Sweeps a cone of fire over the horde", "pair": "core", "evolved": "Inferno Vent"},
 }
 
 const PASSIVES := {

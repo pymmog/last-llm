@@ -19,7 +19,7 @@ scripts/player.gd         movement-only control, live stats, XP, sprite animatio
 scripts/enemy.gd          all mutant types; override _run_brain()/_drop_loot() for bosses
 scripts/director.gd       wave scaling, type unlocks, alpha schedule, start_finale() hook
 scripts/upgrades.gd       weapon/passive catalog + level-up card generator
-scripts/weapons/          weapon_base.gd + 5 weapons + friendly projectile
+scripts/weapons/          weapon_base.gd + 6 weapons + friendly projectile
 scripts/pickups/          XP gems, medkits, scrap, magnets, crates
 scripts/ui/               HUD, debug panel, menus, Workshop, shared ui_theme.gd
 scripts/draw_util.gd      shared PS1-sprite/ellipse draw statics
@@ -66,9 +66,10 @@ godot -s tools/screenshot.gd -- res://scenes/main.tscn /tmp/shot.png 120
 
 ## CI
 
-[`build.yml`](workflows/build.yml) runs on every master push / PR:
-headless smoke test, then exports **Linux AppImage / macOS .app / Windows .exe**
-and uploads them as artifacts. Godot editor + export templates are cached
+[`build.yml`](workflows/build.yml): every master push / PR runs the headless
+smoke test; exports of **Linux AppImage / macOS .app / Windows .exe** (uploaded
+as artifacts) only run on master pushes (i.e. after a PR merges) and manual
+dispatches. Godot editor + export templates are cached
 (key `godot-4.6-stable-v1` — bump when changing `GODOT_VERSION`).
 
 ## Export (local)
